@@ -19,7 +19,7 @@ _NIX_COMMANDS = None
 def parse_args():
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter,
                             description=__doc__,
-                            epilog="Exmaple Usage: python distance-graph.py -e 0.945 -E myedgelist.fsdb -c myclusterlist.fsdb -w 10.5 -H 8.5 -f 8 \
+                            epilog="Example Usage: python distance-graph.py -e 0.945 -E myedgelist.fsdb -c myclusterlist.fsdb -w 10.5 -H 8.5 -f 8 \
                                 -n 250 mydata.fsdb distance_graph.png")
 
     parser.add_argument("-e", "--edge-weight", default=.95,
