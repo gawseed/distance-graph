@@ -19,7 +19,8 @@ _NIX_COMMANDS = None
 def parse_args():
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter,
                             description=__doc__,
-                            epilog="Exmaple Usage: ")
+                            epilog="Exmaple Usage: python distance-graph.py -e 0.945 -E myedgelist.fsdb -c myclusterlist.fsdb -w 10.5 -H 8.5 -f 8 \
+                                -n 250 mydata.fsdb distance_graph.png")
 
     parser.add_argument("-e", "--edge-weight", default=.95,
                         type=float,
@@ -29,7 +30,7 @@ def parse_args():
                         help="Output enumerated edge list to here")
 
     parser.add_argument("-c", "--cluster-list", default=None, type=str,
-                        help="Output enumerated node list to here")
+                        help="Output enumerated cluster list to here")
 
     parser.add_argument("-w", "--width", default=12, type=float,
                         help="The width of the plot in inches")
@@ -40,7 +41,7 @@ def parse_args():
     parser.add_argument("-f", "--font-size", default=10, type=int,
                         help="The font size of the node labels") 
 
-    parser.add_argument("-ns", "--node-size", default=300, type=int,
+    parser.add_argument("-n", "--node-size", default=300, type=int,
                         help="The node size for each node")
 
     parser.add_argument("input_file", type=str,
@@ -445,9 +446,20 @@ def plot_networkx(G,output_file,labels,colorslist,nodeTypeDic,figsize=(12,8),fon
     nx.draw_networkx_edges(G,pos=pos,alpha=edge_alpha)
     nx.draw_networkx_labels(G,pos=pos,labels=labels,font_size=font_size)
     ax.legend(scatterpoints=1)
+
+    ## remove black border
+    ax.spines['top'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    
     plt.savefig(output_file, dpi=300)
 
 def get_clusters(G):
+    """ Finds clusters of commands in NetworkX graph. A cluster is considered to be nodes that are connected by an edge
+    Input: G (NetworkX graph) - graph to find clusters
+    Output: cmdToCluster (dict) - key: command node (str) / value: cluster ID (int)
+    """
     ip_regex = r'^\d+\.\d+\.\d+\.\d+$'
     components = [list(comp) for comp in list(nx.connected_components(G))]
     
@@ -614,6 +626,7 @@ def main():
     G,weighted_edges,labels = draw_networkx(args,weightDic,cmdIPsDic,sourceDic,cmdToArray)
     clusters = get_clusters(G)
 
+    ## create edge list to FSDB file
     if (args.edge_list):
         outh = pyfsdb.Fsdb(out_file=args.edge_list)
         outh.out_column_names=['cluster_id', 'node1_id', 'node2_id', 'node1', 'node2', 'weight']
@@ -624,6 +637,7 @@ def main():
             outh.append([cluster_id,num1,num2,cmd1,cmd2,round(weight,3)])
         outh.close()
 
+    ## create cluster list to FSDB file
     if (args.cluster_list):
         outh = pyfsdb.Fsdb(out_file=args.cluster_list)
         outh.out_column_names=['cluster_id','command']
