@@ -19,12 +19,19 @@ _NIX_COMMANDS = None
 def parse_args():
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter,
                             description=__doc__,
-                            epilog="Example Usage: python distance-graph.py -e 0.945 -E myedgelist.fsdb -c myclusterlist.fsdb -w 10.5 -H 8.5 -f 8 \
-                                -n 250 mydata.fsdb distance_graph.png")
+                            epilog='Example Usage: python distance-graph_v2.py -n command -l source --templatize -e 0.945 -E test1.fsdb -c test2.fsdb -w 12.5 -H 8.5 -fs 8 -ns 250 "/nfs/lander/working/erinszet/data/gawseed/fsdb/2020-01_cowrie_haas_origcmds.fsdb" test.png')
 
-    parser.add_argument("-e", "--edge-weight", default=.95,
-                        type=float,
-                        help="The maximum edge weight to use")
+    parser.add_argument("-n", "--node-name", default=None, type=str,
+                        required=True, help="The column name of node")
+
+    parser.add_argument("-l", "--label", default=None, type=str,
+                        help="The column name of the node's label")
+
+    parser.add_argument("--templatize", default=False, action="store_true",
+                        help="Set this argument to templatize the nodes")
+
+    parser.add_argument("-e", "--edge-weight", default=.95, type=float,
+                        help="The edge weight threshold to use")
 
     parser.add_argument("-E", "--edge-list", default=None, type=str,
                         help="Output enumerated edge list to here")
@@ -38,10 +45,10 @@ def parse_args():
     parser.add_argument("-H", "--height", default=8, type=float,
                         help="The height of the plot in inches")
 
-    parser.add_argument("-f", "--font-size", default=10, type=int,
+    parser.add_argument("-fs", "--font-size", default=10, type=int,
                         help="The font size of the node labels") 
 
-    parser.add_argument("-n", "--node-size", default=300, type=int,
+    parser.add_argument("-ns", "--node-size", default=300, type=int,
                         help="The node size for each node")
 
     parser.add_argument("input_file", type=str,
@@ -55,12 +62,12 @@ def parse_args():
 
     return args
 
-def get_cmd2template(input_file):
+def get_cmd2template(input_file,node_name,label):
     """ Given data file with commands, return dict with command templates
     Input: input_file (str): name of FSDB file that contains IP and command data
     Output: cmd2template (dict): maps templatizable commands to highest degree template
     """
-    cmds = get_commandCounts(input_file)
+    cmds = get_commandCounts(input_file,node_name,label)
     cmd_graph = CommandGraph()
     for cmd in tqdm.tqdm(cmds.keys()):
     #  print("==== CMD IS====\n%s" % cmd) 
@@ -73,33 +80,33 @@ def get_cmd2template(input_file):
     # print("Got templates. Done.")
     return cmd2template
 
-def get_commandCounts(input_file):
+def get_commandCounts(input_file,node_name,label):
     """ Counts number of commands run in the dataset and returns dict with command and respective counts
     Input: input_file (str): FSDB file with IP and command data
     Output: cmdCount (dict): maps command to number of times the cmd appears in the data
     """
     db = pyfsdb.Fsdb(input_file)
 
-    command_index = db.get_column_number("command")
-    source_index = db.get_column_number("source")
+    node_index = db.get_column_number(node_name)
+    label_index = db.get_column_number(label)
 
     cmdCount = {}
 
     for row in db:
-        command = row[command_index]
-        source = row[source_index]
+        node = row[node_index]
+        label = row[label_index]
         
-        if source == "cowrie":
-            command = str([command])
+        if label == "cowrie":
+            node = str([node])
         
-        if command not in cmdCount:
-            cmdCount[command] = 1
+        if node not in cmdCount:
+            cmdCount[node] = 1
         else:
-            cmdCount[command] += 1
+            cmdCount[node] += 1
 
     return cmdCount
 
-def get_info(input_file,cmd2template):
+def get_info(input_file,node_name,label,cmd2template):
     """ Return four dictionaries: (1) weights between commands, (2) IPs that ran commands, (3) sources for each command, and (4) command to array style string
     Input: input_file (str) - FSDB file with IP and command data, template_file (str) - JSON file with templatized commands
     Output: weightDic (dict) - key: pair of commands (tuple) / value: weight (float), cmdIPsDic (dict) - key: command (str) / value: dictionary with key: source (str) & value: IPs that ran command (list),
@@ -108,43 +115,48 @@ def get_info(input_file,cmd2template):
     db = pyfsdb.Fsdb(input_file)
     df = db.get_pandas(data_has_comment_chars=True)
 
-    df["command"] = df["command"].apply(lambda x: str([x]) if x[0]!="[" else x)
-    loggedInOnly = get_loggedInOnly(df)
+    df[node_name] = df[node_name].apply(lambda x: str([x]) if x[0]!="[" else x)
+    loggedInOnly = get_loggedInOnly(df,node_name,label)
 
     df2 = df.copy()[~df["ip"].isin(loggedInOnly)]
-    df2 = df2[df2["command"]!='[]']
+    df2 = df2[df2[node_name]!='[]']
 
-    cmdIPsDic = get_cmdIPsDic(input_file,loggedInOnly)
-    templates = get_templates(cmd2template)
-    cmds = list(df2["command"].unique())
+    cmdIPsDic = get_cmdIPsDic(input_file,loggedInOnly,node_name,label)
+    cmds = list(df2[node_name].unique())
 
-    unique_cmds,cmdIPsDic = get_uniqueCmds(cmds,cmdIPsDic,templates)
+    if cmd2template:
+        templates = get_templates(cmd2template)
+        unique_cmds,cmdIPsDic = get_uniqueCmds(cmds,cmdIPsDic,templates)
+    else:
+        unique_cmds = cmds
+
+    # unique_cmds,cmdIPsDic = get_uniqueCmds(cmds,cmdIPsDic,templates)
 
     cmdToArray = {cmd[2:-2]:cmd for cmd in unique_cmds}
     unique_cmds = [cmd[2:-2] for cmd in unique_cmds]
 
     distDic = get_distances(unique_cmds)
     weightDic = get_weights(distDic)
-    sourceDic = {cmd:"+".join(list(cmdIPsDic[cmdToArray[cmd]].keys()))+"_cmd" for cmd in unique_cmds}
+    sourceDic = {cmd:"+".join(list(cmdIPsDic[cmdToArray[cmd]].keys()))+"_"+node_name for cmd in unique_cmds}
 
     return weightDic,cmdIPsDic,sourceDic,cmdToArray
 
-def get_loggedInOnly(df):
+def get_loggedInOnly(df,node_name,label):
     """ Returns list of IP addresses that only logged in and did not run any commands 
     Input: df (Pandas DataFrame) - dataframe with info on IPs, commands
     Output: loggedInOnly (list) - IPs that only logged in
     """
-    loggedIn = df[df["command"]=='[]']["ip"].unique()
+    loggedIn = df[df[node_name]=='[]']["ip"].unique()
     loggedInOnly = []
 
     for ip in loggedIn:
-        cmdsRunHaas = list(df[(df["ip"]==ip) & (df["source"]=="haas")]["command"].unique())
+        cmdsRunHaas = list(df[(df["ip"]==ip) & (df[label]=="haas")][node_name].unique())
         if cmdsRunHaas == ['[]']:
             loggedInOnly.append(ip)
 
     return loggedInOnly
 
-def get_cmdIPsDic(input_file,loggedInOnly):
+def get_cmdIPsDic(input_file,loggedInOnly,node_name,label):
     """ Returns dict that contains IP addresses that ran the command and from what source
     Input: input_file (str) - FSDB input file, loggedInOnly (list) - list of IPs that only logged in
     Output: cmdIPsDic (dict) - key: command (str) / value: dictionary with key: source (str) & value: IPs that ran command (list)
@@ -154,8 +166,8 @@ def get_cmdIPsDic(input_file,loggedInOnly):
     db = pyfsdb.Fsdb(input_file)
 
     ip_index = db.get_column_number("ip")
-    command_index = db.get_column_number("command")
-    source_index = db.get_column_number("source")
+    node_index = db.get_column_number(node_name)
+    label_index = db.get_column_number(label)
 
     for row in db:
         ip = row[ip_index]
@@ -163,20 +175,20 @@ def get_cmdIPsDic(input_file,loggedInOnly):
         if ip in loggedInOnly: ## if IP only logged in, do not record
             continue
         
-        source = row[source_index]
-        cmd = row[command_index]
+        node = row[node_index]
+        label = row[label_index]
         
-        if cmd[0]!="[":
-            cmd = str([cmd])
+        if node[0]!="[":
+            node = str([node])
         
-        if cmd not in cmdIPsDic:
-            cmdIPsDic[cmd] = {source: [ip]}
+        if node not in cmdIPsDic:
+            cmdIPsDic[node] = {label: [ip]}
         else:
-            if source in cmdIPsDic[cmd]:
-                if ip not in cmdIPsDic[cmd][source]:
-                    cmdIPsDic[cmd][source].append(ip)
+            if label in cmdIPsDic[node]:
+                if ip not in cmdIPsDic[node][label]:
+                    cmdIPsDic[node][label].append(ip)
             else:
-                cmdIPsDic[cmd][source] = [ip]
+                cmdIPsDic[node][label] = [ip]
 
     return cmdIPsDic
 
@@ -477,6 +489,7 @@ def get_clusters(G):
         
     return cmdToCluster
 
+## command templatizer code 
 def is_bash_directive(s):
   """Retruns True if s is bash syntax (e.g., fi), standard command (e.g., wget), or looks like an argument (e.g., -c).
   """
@@ -620,9 +633,15 @@ class CommandGraph:
 
 def main():
     args = parse_args()
+    node_name = args.node_name
+    label = args.label
 
-    cmd2template = get_cmd2template(args.input_file[0])
-    weightDic,cmdIPsDic,sourceDic,cmdToArray = get_info(args.input_file[0],cmd2template)
+    if args.templatize:
+        cmd2template = get_cmd2template(args.input_file[0],node_name,label)
+    else:
+        cmd2template = None
+
+    weightDic,cmdIPsDic,sourceDic,cmdToArray = get_info(args.input_file[0],node_name,label,cmd2template)
     G,weighted_edges,labels = draw_networkx(args,weightDic,cmdIPsDic,sourceDic,cmdToArray)
     clusters = get_clusters(G)
 
