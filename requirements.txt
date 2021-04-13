@@ -1,0 +1,3 @@
+pyfsdb
+networkx
+Levenshtein
