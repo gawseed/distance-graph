@@ -19,7 +19,7 @@ _NIX_COMMANDS = None
 def parse_args():
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter,
                             description=__doc__,
-                            epilog='Example Usage: python distance-graph.py -n command -l source --templatize -e 0.945 -E myedgelist.fsdb -c myclusterlist.fsdb -w 12.5 -H 8.5 -fs 8 -ns 250 "../example/commands.fsdb" test.png')
+                            epilog='Example Usage: python distance-graph.py -n command -l source --templatize -e 0.945 -E myedgelist.fsdb -c myclusterlist.fsdb -w 12.5 -H 8.5 -fs 8 -ns 250 "../example/commands.fsdb" distance-graph.png')
 
     parser.add_argument("-n", "--node-name", default=None, type=str,
                         required=True, help="The column name of node")
