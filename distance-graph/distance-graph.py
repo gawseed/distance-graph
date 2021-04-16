@@ -119,13 +119,23 @@ def get_info(input_file,node_name,label,cmd2template):
     df = db.get_pandas(data_has_comment_chars=True)
 
     df[node_name] = df[node_name].apply(lambda x: str([x]) if x[0]!="[" else x)
-    loggedInOnly = get_loggedInOnly(df,node_name,label)
 
-    df2 = df.copy()[~df["ip"].isin(loggedInOnly)]
+    if id_name:
+        loggedInOnly = get_loggedInOnly(df,node_name,label,id_name)
+
+        df2 = df.copy()[~df[id_name].isin(loggedInOnly)]
     df2 = df2[df2[node_name]!='[]']
+        cmds = list(df2[node_name].unique())
 
-    cmdIPsDic = get_cmdIPsDic(input_file,loggedInOnly,node_name,label)
+        cmdIPsDic = get_cmdIPsDic(input_file,loggedInOnly,node_name,label,id_name)
+    else:
+        df2 = df.copy()
+        df2 = df2[df2[node_name]!='[]']
     cmds = list(df2[node_name].unique())
+        labelDic = get_labelDic(input_file,node_name,label)
+        cmdIPsDic = None
+    
+    # cmds = list(df2[node_name].unique())
 
     if cmd2template:
         templates = get_templates(cmd2template)
@@ -140,7 +150,11 @@ def get_info(input_file,node_name,label,cmd2template):
 
     distDic = get_distances(unique_cmds)
     weightDic = get_weights(distDic)
+
+    if cmdIPsDic:
     sourceDic = {cmd:"+".join(list(cmdIPsDic[cmdToArray[cmd]].keys()))+"_"+node_name for cmd in unique_cmds}
+    else:
+        sourceDic = {cmd:"+".join(labelDic[cmdToArray[cmd]])+"_"+node_name for cmd in unique_cmds}
 
     return weightDic,cmdIPsDic,sourceDic,cmdToArray
 
