@@ -24,8 +24,11 @@ def parse_args():
     parser.add_argument("-n", "--node-name", default=None, type=str,
                         required=True, help="The column name of node")
 
-    parser.add_argument("-l", "--label", default=None, type=str,
+    parser.add_argument("-l", "--label-name", default=None, type=str,
                         help="The column name of the node's label")
+
+    parser.add_argument("-i", "--id-name", default=None, type=str,
+                        help="The column name of the node's identifier")
 
     parser.add_argument("--templatize", default=False, action="store_true",
                         help="Set this argument to templatize the nodes")
