@@ -99,7 +99,7 @@ def get_commandCounts(input_file,node_name,label):
         node = row[node_index]
         label = row[label_index]
         
-        if label == "cowrie":
+        if node[0] != "[":
             node = str([node])
         
         if node not in cmdCount:
