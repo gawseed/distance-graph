@@ -408,7 +408,7 @@ def get_IPs(cmd,dic):
     
     return list(set(ips))
 
-def set_nodeColors(G,sourceDic):
+def set_nodeColors(G,sourceDic,id_name):
     """ Sets source as an attribute for each command node, returns nodeTypeDic and color list
     Input: G (NetworkX graph) - graph with command nodes, sourceDic (dict) - maps command nodes to source label
     Output: nodeTypeDic (dict) - maps node type with nodes, colorslist (list) - list of color for node types
@@ -417,12 +417,14 @@ def set_nodeColors(G,sourceDic):
     sources = set(nx.get_node_attributes(G,"source").values())
 
     mapping = dict(zip(sorted(sources),itertools.count()))
-    mapping["ip"]=3
+
+    if id_name:
+        mapping[id_name]=len(mapping)
 
     types=list(mapping.keys())
-    colorslist = ["b","c","r","y"]
+    colorslist = ["b","c","r","y","g","darkorange"]
 
-    nodeTypeDic = get_nodeTypeDic(types,G.nodes(),sourceDic)
+    nodeTypeDic = get_nodeTypeDic(types,G.nodes(),sourceDic,id_name)
     return nodeTypeDic,colorslist
 
 def get_nodeTypeDic(types,nodes,sourceDic):
