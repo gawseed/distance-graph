@@ -668,14 +668,15 @@ class CommandGraph:
 def main():
     args = parse_args()
     node_name = args.node_name
-    label = args.label
+    label_name = args.label_name
+    id_name = args.id_name
 
     if args.templatize:
-        cmd2template = get_cmd2template(args.input_file[0],node_name,label)
+        cmd2template = get_cmd2template(args.input_file[0],node_name,label_name)
     else:
         cmd2template = None
 
-    weightDic,cmdIPsDic,sourceDic,cmdToArray = get_info(args.input_file[0],node_name,label,cmd2template)
+    weightDic,cmdIPsDic,sourceDic,cmdToArray = get_info(args.input_file[0],node_name,label_name,id_name,cmd2template)
     G,weighted_edges,labels,clusters = draw_networkx(args,weightDic,cmdIPsDic,sourceDic,cmdToArray)
 
     ## create edge list to FSDB file
