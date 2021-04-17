@@ -207,6 +207,29 @@ def get_cmdIPsDic(input_file,loggedInOnly,node_name,label,id_name):
 
     return cmdIPsDic
 
+def get_labelDic(input_file,node_name,label):
+    labelDic = {}
+
+    db = pyfsdb.Fsdb(input_file)
+
+    node_index = db.get_column_number(node_name)
+    label_index = db.get_column_number(label)
+
+    for row in db:
+        node = row[node_index]
+        label = row[label_index]
+        
+        if node[0]!="[":
+            node = str([node])
+        
+        if node not in labelDic:
+            labelDic[node] = [label]
+        else:
+            if label not in labelDic[node]:
+                labelDic[node].append(label)
+
+    return labelDic
+
 def get_templates(cmd2template):
     """ Gets list of commands that belong to each template and returns a dictionary
     Input: cmd2template (dict) - key: command (str) / value: template (tuple)
