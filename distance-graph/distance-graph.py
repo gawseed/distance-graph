@@ -467,7 +467,7 @@ def get_numberNodes(G,sourceDic):
     
     return labels
 
-def plot_networkx(G,output_file,labels,colorslist,nodeTypeDic,figsize=(12,8),font_size=10,node_size=350,ip_alpha=0.2,cmd_alpha=0.2,edge_alpha=0.2):
+def plot_networkx(G,output_file,labels,colorslist,nodeTypeDic,id_name,figsize=(12,8),font_size=10,node_size=350,ip_alpha=0.2,cmd_alpha=0.2,edge_alpha=0.2):
     """ Plots NetworkX graph and saves image to output file
     Input: G (NetworkX graph) - graph with IP and command nodes to graph, output_file (str) - filename for network graph image
     labels (dict) - maps node to integer label, colorslist (list) - list of node colors, nodeTypeDic (dict) - maps node type to list of nodes
@@ -481,7 +481,7 @@ def plot_networkx(G,output_file,labels,colorslist,nodeTypeDic,figsize=(12,8),fon
         color = colorslist[i]
         i+=1
 
-        if nodetype=="ip":
+        if nodetype==id_name:
             alpha=ip_alpha
         else:
             alpha=cmd_alpha
