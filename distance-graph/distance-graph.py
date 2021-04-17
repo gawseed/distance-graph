@@ -402,10 +402,9 @@ def get_IPs(cmd,dic):
     Output: (list) unique IPs that ran command
     """
     ips = []
-    if "cowrie" in dic[cmd]:
-        ips = ips + dic[cmd]["cowrie"]
-    if "haas" in dic[cmd]:
-        ips = ips + dic[cmd]["haas"]
+
+    for label,label_ips in dic[cmd].items():
+        ips = ips + label_ips
     
     return list(set(ips))
 
