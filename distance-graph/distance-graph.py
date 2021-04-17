@@ -109,7 +109,7 @@ def get_commandCounts(input_file,node_name,label):
 
     return cmdCount
 
-def get_info(input_file,node_name,label,cmd2template):
+def get_info(input_file,node_name,label,id_name,cmd2template):
     """ Return four dictionaries: (1) weights between commands, (2) IPs that ran commands, (3) sources for each command, and (4) command to array style string
     Input: input_file (str) - FSDB file with IP and command data, template_file (str) - JSON file with templatized commands
     Output: weightDic (dict) - key: pair of commands (tuple) / value: weight (float), cmdIPsDic (dict) - key: command (str) / value: dictionary with key: source (str) & value: IPs that ran command (list),
@@ -135,15 +135,11 @@ def get_info(input_file,node_name,label,cmd2template):
         labelDic = get_labelDic(input_file,node_name,label)
         cmdIPsDic = None
     
-    # cmds = list(df2[node_name].unique())
-
     if cmd2template:
         templates = get_templates(cmd2template)
         unique_cmds,cmdIPsDic = get_uniqueCmds(cmds,cmdIPsDic,templates)
     else:
         unique_cmds = cmds
-
-    # unique_cmds,cmdIPsDic = get_uniqueCmds(cmds,cmdIPsDic,templates)
 
     cmdToArray = {cmd[2:-2]:cmd for cmd in unique_cmds}
     unique_cmds = [cmd[2:-2] for cmd in unique_cmds]
