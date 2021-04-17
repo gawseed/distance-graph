@@ -154,17 +154,19 @@ def get_info(input_file,node_name,label,id_name,cmd2template):
 
     return weightDic,cmdIPsDic,sourceDic,cmdToArray
 
-def get_loggedInOnly(df,node_name,label):
+def get_loggedInOnly(df,node_name,label,id_name):
     """ Returns list of IP addresses that only logged in and did not run any commands 
     Input: df (Pandas DataFrame) - dataframe with info on IPs, commands
     Output: loggedInOnly (list) - IPs that only logged in
     """
-    loggedIn = df[df[node_name]=='[]']["ip"].unique()
+    loggedIn = df[df[node_name]=='[]'][id_name].unique()
     loggedInOnly = []
+    labels = df[label].unique()
 
     for ip in loggedIn:
-        cmdsRunHaas = list(df[(df["ip"]==ip) & (df[label]=="haas")][node_name].unique())
-        if cmdsRunHaas == ['[]']:
+        for label_name in labels:
+            cmdsRun = list(df[(df[id_name]==ip) & (df[label]==label_name)][node_name].unique())
+            if cmdsRun == ['[]']:
             loggedInOnly.append(ip)
 
     return loggedInOnly
