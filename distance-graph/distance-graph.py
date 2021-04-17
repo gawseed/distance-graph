@@ -373,11 +373,13 @@ def draw_networkx(args,weightDic,cmdIPsDic,sourceDic,cmdToArray):
     G = nx.Graph()
     G.add_weighted_edges_from(weighted_edges)
     clusters = get_clusters(G)
+
+    if cmdIPsDic:
     add_IPnodes(G,cmdToArray,cmdIPsDic)
     
-    nodeTypeDic,colorslist = set_nodeColors(G,sourceDic)
+    nodeTypeDic,colorslist = set_nodeColors(G,sourceDic,args.id_name)
     labels = get_numberNodes(G,sourceDic)
-    plot_networkx(G,output_file,labels,colorslist,nodeTypeDic,figsize=figsize,font_size=args.font_size,node_size=args.node_size)
+    plot_networkx(G,output_file,labels,colorslist,nodeTypeDic,args.id_name,figsize=figsize,font_size=args.font_size,node_size=args.node_size)
 
     return G,weighted_edges,labels,clusters
 
