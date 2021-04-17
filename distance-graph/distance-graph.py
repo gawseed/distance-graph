@@ -258,23 +258,28 @@ def get_uniqueCmds(cmds,cmdIPsDic,template2cmd):
         first_cmd = cmds[0]
         cmds = cmds[1:]
         
+        if cmdIPsDic:
         if first_cmd not in cmdIPsDic:
-            first_cmd = cmds[0]
-            cmds = cmds[1:]
+                for i in range(len(cmds)):
+                    if cmds[i] in cmdIPsDic:
+                        first_cmd = cmds[i]
+                        cmds = cmds[i+1:]
+                        break
 
         cmdTemplateDic[first_cmd] = cmds
         unique_cmds = [x for x in unique_cmds if x not in cmds]
 
     for cmd_key in cmdTemplateDic:
-        if cmd_key not in cmdIPsDic:
+        if cmdIPsDic and cmd_key not in cmdIPsDic:
             template_cmds = cmdTemplateDic[cmd_key]
             first_cmd = template_cmds[0]
             template_cmds = template_cmds[1:]
         else:
             for cmd in cmdTemplateDic[cmd_key]:
-                if cmd not in cmdIPsDic:
+                if cmdIPsDic and cmd not in cmdIPsDic:
                     cmdTemplateDic[cmd_key].remove(cmd)
 
+    if cmdIPsDic:
     cmdIPsDic = update_cmdIPsDic(cmdIPsDic,cmdTemplateDic)
     
     return unique_cmds,cmdIPsDic
