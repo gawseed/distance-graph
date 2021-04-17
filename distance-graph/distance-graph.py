@@ -292,28 +292,15 @@ def update_cmdIPsDic(cmdIPsDic,cmdTemplateDic):
     """
     template_cmdIPsDic = {}
     for cmd in cmdTemplateDic: ## for every template
-        haasIPs = []
-        cowrieIPs = []
+        labels = cmdIPsDic[cmd].keys()
+        IPsDic = {}
         
-        if "haas" in cmdIPsDic[cmd]:
-            haasIPs = cmdIPsDic[cmd]["haas"]
-        if "cowrie" in cmdIPsDic[cmd]:
-            cowrieIPs = cmdIPsDic[cmd]["cowrie"]
+        for label in labels:
+            IPs = cmdIPsDic[cmd][label] + [cmdIPsDic[cmds][label] for cmds in cmdTemplateDic[cmd] if label in cmdIPsDic[cmds]]
+            IPs = [ip for lst in IPs for ip in lst]
+            IPsDic[label] = IPs
         
-        haasIPs = [haasIPs] + [cmdIPsDic[cmds]["haas"] for cmds in cmdTemplateDic[cmd] if "haas" in cmdIPsDic[cmds]]
-        haasIPs = [ip for lst in haasIPs for ip in lst]
-        
-        cowrieIPs = [cowrieIPs] + [cmdIPsDic[cmds]["cowrie"] for cmds in cmdTemplateDic[cmd] if "cowrie" in cmdIPsDic[cmds]]
-        cowrieIPs = [ip for lst in cowrieIPs for ip in lst]
-        
-        if haasIPs == []:
-            dic = {"cowrie":cowrieIPs}
-        elif cowrieIPs == []:
-            dic = {"haas":haasIPs}
-        else:
-            dic = {"haas":haasIPs,"cowrie":cowrieIPs}
-            
-        template_cmdIPsDic[cmd] = dic
+        template_cmdIPsDic[cmd] = IPsDic
     
     cmdIPs = cmdIPsDic.copy()
 
