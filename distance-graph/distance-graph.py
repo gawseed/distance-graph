@@ -171,7 +171,7 @@ def get_loggedInOnly(df,node_name,label,id_name):
 
     return loggedInOnly
 
-def get_cmdIPsDic(input_file,loggedInOnly,node_name,label):
+def get_cmdIPsDic(input_file,loggedInOnly,node_name,label,id_name):
     """ Returns dict that contains IP addresses that ran the command and from what source
     Input: input_file (str) - FSDB input file, loggedInOnly (list) - list of IPs that only logged in
     Output: cmdIPsDic (dict) - key: command (str) / value: dictionary with key: source (str) & value: IPs that ran command (list)
@@ -180,14 +180,14 @@ def get_cmdIPsDic(input_file,loggedInOnly,node_name,label):
 
     db = pyfsdb.Fsdb(input_file)
 
-    ip_index = db.get_column_number("ip")
+    id_index = db.get_column_number(id_name)
     node_index = db.get_column_number(node_name)
     label_index = db.get_column_number(label)
 
     for row in db:
-        ip = row[ip_index]
+        ident = row[id_index] ## identifier (IP address)
         
-        if ip in loggedInOnly: ## if IP only logged in, do not record
+        if ident in loggedInOnly: ## if IP only logged in, do not record
             continue
         
         node = row[node_index]
@@ -197,13 +197,13 @@ def get_cmdIPsDic(input_file,loggedInOnly,node_name,label):
             node = str([node])
         
         if node not in cmdIPsDic:
-            cmdIPsDic[node] = {label: [ip]}
+            cmdIPsDic[node] = {label: [ident]}
         else:
             if label in cmdIPsDic[node]:
-                if ip not in cmdIPsDic[node][label]:
-                    cmdIPsDic[node][label].append(ip)
+                if ident not in cmdIPsDic[node][label]:
+                    cmdIPsDic[node][label].append(ident)
             else:
-                cmdIPsDic[node][label] = [ip]
+                cmdIPsDic[node][label] = [ident]
 
     return cmdIPsDic
 
