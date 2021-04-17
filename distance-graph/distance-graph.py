@@ -427,7 +427,7 @@ def set_nodeColors(G,sourceDic,id_name):
     nodeTypeDic = get_nodeTypeDic(types,G.nodes(),sourceDic,id_name)
     return nodeTypeDic,colorslist
 
-def get_nodeTypeDic(types,nodes,sourceDic):
+def get_nodeTypeDic(types,nodes,sourceDic,id_name):
     """ Maps node label to list of nodes and returns dict
     Input: types (list) - list of node types/labels, nodes (NetworkX nodes) - nodes of NetworkX graph, 
     sourceDic (dict) - maps command nodes to source label
@@ -437,7 +437,7 @@ def get_nodeTypeDic(types,nodes,sourceDic):
     
     for node in nodes:
         if node not in sourceDic:
-            nodeTypeDic["ip"] = nodeTypeDic["ip"]+[node]
+            nodeTypeDic[id_name] = nodeTypeDic[id_name]+[node]
         else:
             source = sourceDic[node]
             nodeTypeDic[source] = nodeTypeDic[source]+[node]
