@@ -19,7 +19,7 @@ _NIX_COMMANDS = None
 def parse_args():
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter,
                             description=__doc__,
-                            epilog='Example Usage: python distance-graph.py -n command -l source --templatize -e 0.945 -E myedgelist.fsdb -c myclusterlist.fsdb -w 12.5 -H 8.5 -fs 8 -ns 250 "../example/commands.fsdb" distance-graph.png')
+                            epilog='Example Usage: python distance-graph.py -n command -l source -i ip --templatize -e 0.945 -E myedgelist.fsdb -c myclusterlist.fsdb -w 12.5 -H 8.5 -fs 8 -ns 250 "../example/commands.fsdb" distance-graph.png')
 
     parser.add_argument("-n", "--node-name", default=None, type=str,
                         required=True, help="The column name of node")
@@ -124,17 +124,17 @@ def get_info(input_file,node_name,label,id_name,cmd2template):
         loggedInOnly = get_loggedInOnly(df,node_name,label,id_name)
 
         df2 = df.copy()[~df[id_name].isin(loggedInOnly)]
-    df2 = df2[df2[node_name]!='[]']
+        df2 = df2[df2[node_name]!='[]']
         cmds = list(df2[node_name].unique())
 
         cmdIPsDic = get_cmdIPsDic(input_file,loggedInOnly,node_name,label,id_name)
     else:
         df2 = df.copy()
         df2 = df2[df2[node_name]!='[]']
-    cmds = list(df2[node_name].unique())
+        cmds = list(df2[node_name].unique())
         labelDic = get_labelDic(input_file,node_name,label)
         cmdIPsDic = None
-    
+
     if cmd2template:
         templates = get_templates(cmd2template)
         unique_cmds,cmdIPsDic = get_uniqueCmds(cmds,cmdIPsDic,templates)
@@ -148,7 +148,7 @@ def get_info(input_file,node_name,label,id_name,cmd2template):
     weightDic = get_weights(distDic)
 
     if cmdIPsDic:
-    sourceDic = {cmd:"+".join(list(cmdIPsDic[cmdToArray[cmd]].keys()))+"_"+node_name for cmd in unique_cmds}
+        sourceDic = {cmd:"+".join(list(cmdIPsDic[cmdToArray[cmd]].keys()))+"_"+node_name for cmd in unique_cmds}
     else:
         sourceDic = {cmd:"+".join(labelDic[cmdToArray[cmd]])+"_"+node_name for cmd in unique_cmds}
 
@@ -167,7 +167,7 @@ def get_loggedInOnly(df,node_name,label,id_name):
         for label_name in labels:
             cmdsRun = list(df[(df[id_name]==ip) & (df[label]==label_name)][node_name].unique())
             if cmdsRun == ['[]']:
-            loggedInOnly.append(ip)
+                loggedInOnly.append(ip)
 
     return loggedInOnly
 
@@ -259,7 +259,7 @@ def get_uniqueCmds(cmds,cmdIPsDic,template2cmd):
         cmds = cmds[1:]
         
         if cmdIPsDic:
-        if first_cmd not in cmdIPsDic:
+            if first_cmd not in cmdIPsDic:
                 for i in range(len(cmds)):
                     if cmds[i] in cmdIPsDic:
                         first_cmd = cmds[i]
@@ -280,7 +280,7 @@ def get_uniqueCmds(cmds,cmdIPsDic,template2cmd):
                     cmdTemplateDic[cmd_key].remove(cmd)
 
     if cmdIPsDic:
-    cmdIPsDic = update_cmdIPsDic(cmdIPsDic,cmdTemplateDic)
+        cmdIPsDic = update_cmdIPsDic(cmdIPsDic,cmdTemplateDic)
     
     return unique_cmds,cmdIPsDic
 
@@ -294,12 +294,12 @@ def update_cmdIPsDic(cmdIPsDic,cmdTemplateDic):
     for cmd in cmdTemplateDic: ## for every template
         labels = cmdIPsDic[cmd].keys()
         IPsDic = {}
-        
+
         for label in labels:
             IPs = cmdIPsDic[cmd][label] + [cmdIPsDic[cmds][label] for cmds in cmdTemplateDic[cmd] if label in cmdIPsDic[cmds]]
             IPs = [ip for lst in IPs for ip in lst]
             IPsDic[label] = IPs
-        
+
         template_cmdIPsDic[cmd] = IPsDic
     
     cmdIPs = cmdIPsDic.copy()
@@ -375,7 +375,7 @@ def draw_networkx(args,weightDic,cmdIPsDic,sourceDic,cmdToArray):
     clusters = get_clusters(G)
 
     if cmdIPsDic:
-    add_IPnodes(G,cmdToArray,cmdIPsDic)
+        add_IPnodes(G,cmdToArray,cmdIPsDic)
     
     nodeTypeDic,colorslist = set_nodeColors(G,sourceDic,args.id_name)
     labels = get_numberNodes(G,sourceDic)
