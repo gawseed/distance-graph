@@ -534,7 +534,7 @@ def is_bash_directive(s):
   if s.startswith('-'): return True
   global _NIX_COMMANDS
   if _NIX_COMMANDS is None:
-    _NIX_COMMANDS = set(open('/nfs/lander/working/erinszet/extra/nix_commands.txt').read().split('\n'))
+    _NIX_COMMANDS = set(open('../example/nix_commands.txt').read().split('\n'))
   return s in _NIX_COMMANDS
 
 
