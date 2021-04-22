@@ -300,7 +300,7 @@ def update_cmdIPsDic(cmdIPsDic,cmdTemplateDic):
         IPsDic = {}
 
         for label in labels:
-            IPs = cmdIPsDic[cmd][label] + [cmdIPsDic[cmds][label] for cmds in cmdTemplateDic[cmd] if label in cmdIPsDic[cmds]]
+            IPs = [cmdIPsDic[cmd][label]] + [cmdIPsDic[cmds][label] for cmds in cmdTemplateDic[cmd] if label in cmdIPsDic[cmds]]
             IPs = [ip for lst in IPs for ip in lst]
             IPsDic[label] = IPs
 
