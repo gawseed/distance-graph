@@ -208,6 +208,10 @@ def get_cmdIPsDic(input_file,loggedInOnly,node_name,label,id_name):
     return cmdIPsDic
 
 def get_labelDic(input_file,node_name,label):
+    """ Returns dict that maps node to list of labels node has
+    Input: input_file (str) - FSDB input file
+    Output: labelDic (dict) - key: node (str) / value: list of labels
+    """
     labelDic = {}
 
     db = pyfsdb.Fsdb(input_file)
