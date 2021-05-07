@@ -500,11 +500,12 @@ def plot_networkx(G,output_file,labels,colorslist,nodeTypeDic,id_name,figsize=(1
 
         if nodetype==id_name:
             alpha=ip_alpha
+            nx.draw_networkx_nodes(G,pos=pos,nodelist=nodelist,ax=ax,\
+                        label=nodetype,alpha=alpha,node_size=node_size,node_shape="^",node_color=color)
         else:
             alpha=cmd_alpha
-
-        nx.draw_networkx_nodes(G,pos=pos,nodelist=nodelist,ax=ax,\
-                               label=nodetype,alpha=alpha,node_size=node_size,node_color=color)
+            nx.draw_networkx_nodes(G,pos=pos,nodelist=nodelist,ax=ax,\
+                        label=nodetype,alpha=alpha,node_size=node_size,node_color=color)
 
     nx.draw_networkx_edges(G,pos=pos,alpha=edge_alpha)
     nx.draw_networkx_labels(G,pos=pos,labels=labels,font_size=font_size)
