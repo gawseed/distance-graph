@@ -690,7 +690,7 @@ def main():
     id_name = args.id_name
 
     if args.templatize:
-        cmd2template = get_cmd2template(args.input_file[0],node_name,label_name)
+        cmd2template = get_cmd2template(args.input_file,node_name,label_name)
     else:
         cmd2template = None
 
