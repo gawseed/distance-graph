@@ -65,12 +65,12 @@ def parse_args():
 
     return args
 
-def get_cmd2template(input_file,node_name,label):
+def get_cmd2template(input_file,node_name,label_name):
     """ Given data file with commands, return dict with command templates
     Input: input_file (str): name of FSDB file that contains IP and command data
     Output: cmd2template (dict): maps templatizable commands to highest degree template
     """
-    cmds = get_commandCounts(input_file,node_name,label)
+    cmds = get_commandCounts(input_file,node_name,label_name)
     cmd_graph = CommandGraph()
     for cmd in tqdm.tqdm(cmds.keys()):
     #  print("==== CMD IS====\n%s" % cmd) 
