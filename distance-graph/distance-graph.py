@@ -178,39 +178,42 @@ def get_loggedInOnly(df,node_name,label,id_name):
 
     return loggedInOnly
 
-def get_cmdIPsDic(input_file,loggedInOnly,node_name,label,id_name):
+def get_cmdIPsDic(input_file,loggedInOnly,node_name,label_name,id_name):
     """ Returns dict that contains IP addresses that ran the command and from what source
     Input: input_file (str) - FSDB input file, loggedInOnly (list) - list of IPs that only logged in
     Output: cmdIPsDic (dict) - key: command (str) / value: dictionary with key: source (str) & value: IPs that ran command (list)
     """
     cmdIPsDic = {}
 
-    db = pyfsdb.Fsdb(input_file)
+    for filename in input_file:
+        db = pyfsdb.Fsdb(filename)
 
-    id_index = db.get_column_number(id_name)
-    node_index = db.get_column_number(node_name)
-    label_index = db.get_column_number(label)
+        id_index = db.get_column_number(id_name)
+        node_index = db.get_column_number(node_name)
+        label_index = db.get_column_number(label_name)
 
-    for row in db:
-        ident = row[id_index] ## identifier (IP address)
-        
-        if ident in loggedInOnly: ## if IP only logged in, do not record
-            continue
-        
-        node = row[node_index]
-        label = row[label_index]
-        
-        if node[0]!="[":
-            node = str([node])
-        
-        if node not in cmdIPsDic:
-            cmdIPsDic[node] = {label: [ident]}
-        else:
-            if label in cmdIPsDic[node]:
-                if ident not in cmdIPsDic[node][label]:
-                    cmdIPsDic[node][label].append(ident)
+        for row in db:
+            ident = row[id_index] ## identifier (IP address)
+            
+            if ident in loggedInOnly: ## if IP only logged in, do not record
+                continue
+            
+            node = row[node_index]
+            label = row[label_index]
+            
+            if node[0]!="[":
+                node = str([node])
+            
+            if node not in cmdIPsDic:
+                cmdIPsDic[node] = {label: [ident]}
             else:
-                cmdIPsDic[node][label] = [ident]
+                if label in cmdIPsDic[node]:
+                    if ident not in cmdIPsDic[node][label]:
+                        cmdIPsDic[node][label].append(ident)
+                else:
+                    cmdIPsDic[node][label] = [ident]
+
+        db.close()
 
     return cmdIPsDic
 
