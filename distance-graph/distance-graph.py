@@ -83,29 +83,32 @@ def get_cmd2template(input_file,node_name,label_name):
     # print("Got templates. Done.")
     return cmd2template
 
-def get_commandCounts(input_file,node_name,label):
+def get_commandCounts(input_file,node_name,label_name):
     """ Counts number of commands run in the dataset and returns dict with command and respective counts
     Input: input_file (str): FSDB file with IP and command data
     Output: cmdCount (dict): maps command to number of times the cmd appears in the data
     """
-    db = pyfsdb.Fsdb(input_file)
-
-    node_index = db.get_column_number(node_name)
-    label_index = db.get_column_number(label)
-
     cmdCount = {}
 
-    for row in db:
-        node = row[node_index]
-        label = row[label_index]
+    for filename in input_file:
+        db = pyfsdb.Fsdb(filename)
+
+        node_index = db.get_column_number(node_name)
+        label_index = db.get_column_number(label_name)
+
+        for row in db:
+            node = row[node_index]
+            label = row[label_index]
+            
+            if node[0] != "[":
+                node = str([node])
+            
+            if node not in cmdCount:
+                cmdCount[node] = 1
+            else:
+                cmdCount[node] += 1
         
-        if node[0] != "[":
-            node = str([node])
-        
-        if node not in cmdCount:
-            cmdCount[node] = 1
-        else:
-            cmdCount[node] += 1
+        db.close()
 
     return cmdCount
 
