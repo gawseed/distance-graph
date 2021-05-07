@@ -67,8 +67,12 @@ def parse_args():
 
 def get_cmd2template(input_file,node_name,label_name):
     """ Given data file with commands, return dict with command templates
-    Input: input_file (str): name of FSDB file that contains IP and command data
-    Output: cmd2template (dict): maps templatizable commands to highest degree template
+    Input:
+        input_file (list) - list of FSDB files that contain IP and command data
+        node_name (str) - column name of node
+        label_name (str) - column name of label
+    Output:
+        cmd2template (dict) - maps templatizable commands to highest degree template
     """
     cmds = get_commandCounts(input_file,node_name,label_name)
     cmd_graph = CommandGraph()
@@ -85,8 +89,12 @@ def get_cmd2template(input_file,node_name,label_name):
 
 def get_commandCounts(input_file,node_name,label_name):
     """ Counts number of commands run in the dataset and returns dict with command and respective counts
-    Input: input_file (str): FSDB file with IP and command data
-    Output: cmdCount (dict): maps command to number of times the cmd appears in the data
+    Input:
+        input_file (list) - list of FSDB files with IP and command data
+        node_name (str) - column name of node
+        label_name (str) - column name of label
+    Output:
+        cmdCount (dict) - maps command to number of times the cmd appears in the data
     """
     cmdCount = {}
 
@@ -114,9 +122,17 @@ def get_commandCounts(input_file,node_name,label_name):
 
 def get_info(input_file,node_name,label,id_name,cmd2template):
     """ Return four dictionaries: (1) weights between commands, (2) IPs that ran commands, (3) sources for each command, and (4) command to array style string
-    Input: input_file (str) - FSDB file with IP and command data, template_file (str) - JSON file with templatized commands
-    Output: weightDic (dict) - key: pair of commands (tuple) / value: weight (float), cmdIPsDic (dict) - key: command (str) / value: dictionary with key: source (str) & value: IPs that ran command (list),
-    sourceDic (dict) - key: command (str) / value: source label (str), cmdToArray (dict) - key: command (str) / value: array style command (str)
+    Input:
+        input_file (list) - list of FSDB files with IP and command data
+        node_name (str) - column name of node (eg. "command")
+        label_name (str) - column name of label (eg. "source")
+        id_name (str) - column name of identifier column (eg. "ip")
+        cmd2template (dict) - maps templatizable commands to highest degree template
+    Output:
+        weightDic (dict) - key: pair of commands (tuple) / value: weight (float)
+        cmdIPsDic (dict) - key: command (str) / value: dictionary with key: source (str) & value: IPs that ran command (list)
+        sourceDic (dict) - key: command (str) / value: source label (str)
+        cmdToArray (dict) - key: command (str) / value: array style command (str)
     """
     df = pd.DataFrame()
 
@@ -163,8 +179,13 @@ def get_info(input_file,node_name,label,id_name,cmd2template):
 
 def get_loggedInOnly(df,node_name,label,id_name):
     """ Returns list of IP addresses that only logged in and did not run any commands 
-    Input: df (Pandas DataFrame) - dataframe with info on IPs, commands
-    Output: loggedInOnly (list) - IPs that only logged in
+    Input:
+        df (Pandas DataFrame) - dataframe with info on IPs, commands
+        node_name (str) - column name of node (eg. "command")
+        label_name (str) - column name of label (eg. "source")
+        id_name (str) - column name of identifier column (eg. "ip")
+    Output:
+        loggedInOnly (list) - IPs that only logged in
     """
     loggedIn = df[df[node_name]=='[]'][id_name].unique()
     loggedInOnly = []
@@ -180,8 +201,14 @@ def get_loggedInOnly(df,node_name,label,id_name):
 
 def get_cmdIPsDic(input_file,loggedInOnly,node_name,label_name,id_name):
     """ Returns dict that contains IP addresses that ran the command and from what source
-    Input: input_file (str) - FSDB input file, loggedInOnly (list) - list of IPs that only logged in
-    Output: cmdIPsDic (dict) - key: command (str) / value: dictionary with key: source (str) & value: IPs that ran command (list)
+    Input:
+        input_file (str) - FSDB input file
+        loggedInOnly (list) - list of IPs that only logged in
+        node_name (str) - column name of node (eg. "command")
+        label_name (str) - column name of label (eg. "source")
+        id_name (str) - column name of identifier column (eg. "ip")
+    Output:
+        cmdIPsDic (dict) - key: command (str) / value: dictionary with key: source (str) & value: IPs that ran command (list)
     """
     cmdIPsDic = {}
 
@@ -219,8 +246,12 @@ def get_cmdIPsDic(input_file,loggedInOnly,node_name,label_name,id_name):
 
 def get_labelDic(input_file,node_name,label_name):
     """ Returns dict that maps node to list of labels node has
-    Input: input_file (str) - FSDB input file
-    Output: labelDic (dict) - key: node (str) / value: list of labels
+    Input:
+        input_file (str) - FSDB input file
+        node_name (str): column name of node (eg. "command")
+        label_name (str): column name of label (eg. "source")
+    Output:
+        labelDic (dict) - key: node (str) / value: list of labels
     """
     labelDic = {}
 
@@ -249,8 +280,10 @@ def get_labelDic(input_file,node_name,label_name):
 
 def get_templates(cmd2template):
     """ Gets list of commands that belong to each template and returns a dictionary
-    Input: cmd2template (dict) - key: command (str) / value: template (tuple)
-    Output: template2cmd (dict) - key: template (tuple) / value: commands that belong to the template (list)
+    Input:
+        cmd2template (dict) - key: command (str) / value: template (tuple)
+    Output:
+        template2cmd (dict) - key: template (tuple) / value: commands that belong to the template (list)
     """
     template2cmd = {}
     for cmd,basename in cmd2template.items():
@@ -264,9 +297,13 @@ def get_templates(cmd2template):
 
 def get_uniqueCmds(cmds,cmdIPsDic,template2cmd):
     """ Returns list of unique commands, dict that maps command to a dict that has source and IPs that ran command
-    Input: cmds (list) - list of commands,
-    cmdIPsDic (dict) - dict that maps command to a dictionary that has source and IPs that ran the command
-    Output: unique_cmds (list) - list of unique commands, cmdIPsDic (dict) - maps command to a dict that has source and IPs that ran the command
+    Input:
+        cmds (list) - list of commands,
+        cmdIPsDic (dict) - dict that maps command to a dictionary that has source and IPs that ran the command
+        template2cmd (dict) - key: template (tuple) / value: commands that belong to the template (list)
+    Output:
+        unique_cmds (list) - list of unique commands
+        cmdIPsDic (dict) - maps command to a dict that has source and IPs that ran the command
     """
     unique_cmds = cmds
     cmdTemplateDic = {}
@@ -303,9 +340,11 @@ def get_uniqueCmds(cmds,cmdIPsDic,template2cmd):
 
 def update_cmdIPsDic(cmdIPsDic,cmdTemplateDic):
     """ Returns updated cmdIPsDic dict so templatized command IPs include all IPs that ran cmd with templatized cmd
-    Input: cmdIPsDic (dict) - maps command to a dictionary that has source and IPs that ran the command,
-    cmdTemplateDic (dict) - maps first command of template to list of all other commands of same template
-    Output: (dict) maps command to dict that contains source and IP addresses
+    Input:
+        cmdIPsDic (dict) - maps command to a dictionary that has source and IPs that ran the command,
+        cmdTemplateDic (dict) - maps first command of template to list of all other commands of same template
+    Output: 
+        cmdIPs (dict) - maps command to dict that contains source and IP addresses
     """
     template_cmdIPsDic = {}
     for cmd in cmdTemplateDic: ## for every template
@@ -332,8 +371,10 @@ def update_cmdIPsDic(cmdIPsDic,cmdTemplateDic):
 
 def get_distances(cmds):
     """ Returns dict that maps every pair of commands with their calculated distance
-    Input: cmds (list) - list of commands
-    Output: distDic (dict) - key: pair of commands (tuple) / value: distance between commands (float)
+    Input:
+        cmds (list) - list of commands
+    Output:
+        distDic (dict) - key: pair of commands (tuple) / value: distance between commands (float)
     """
     cmdCombos = list(itertools.combinations(cmds,2))
 
@@ -348,8 +389,10 @@ def get_distances(cmds):
 
 def get_weights(distDic):
     """ Returns dict with weights of every pair of commands. Weights are inversely proportional to distance
-    Input: distDic (dict) - dict with distances of every pair of commands
-    Output: weightDic (dict) - key: pair of commands (tuple) / value: weight between commands (float)
+    Input:
+        distDic (dict) - dict with distances of every pair of commands
+    Output:
+        weightDic (dict) - key: pair of commands (tuple) / value: weight between commands (float)
     """
     distances = sorted(list(set(distDic.values())))
 
@@ -372,12 +415,18 @@ def get_weights(distDic):
     return weightDic
 
 def draw_networkx(args,weightDic,cmdIPsDic,sourceDic,cmdToArray):
-    """ Finds the weighted edges and plots the NetworkX graph
-    Input: threshold (float) - weight threshold for weighted edges, output_file (str) - filename for network graph,
-    weightDic (dict) - weights for each pair of commands, cmdIPsDic (dict) - maps command to a dictionary that has source and IPs that ran the command,
-    sourceDic (dict) - maps command to source label, cmdToArray (dict) - maps command to array style command
-    Output: labeled_G (NetworkX graph) - labeled graph with cmd and IP nodes, weighted_edges (list) - list of tuples containing command pair and weight,
-    labels (dict) - maps command node to integer
+    """ Finds the weighted edges and plots the NetworkX graph. Obtains labels for nodes and cluster IDs for connected nodes
+    Input:
+        args (argument parser) - parser of command line arguments,
+        weightDic (dict) - weights for each pair of commands, cmdIPsDic (dict) - maps command to a dictionary that has source and IPs that ran the command,
+        cmdIPsDic (dict) - maps command to dict that contains source and IP addresses
+        sourceDic (dict) - maps command to source label, cmdToArray (dict) - maps command to array style command,
+        cmdToArray (dict) - maps command (str) to array style command (str)
+    Output:
+        G (NetworkX graph) - labeled graph with weighted edges,
+        weighted_edges (list) - list of tuples containing command pair and weight,
+        labels (dict) - maps command node to integer,
+        clusters (dict) - key: command node (str) / value: cluster ID (int)
     """
     threshold = args.edge_weight
     output_file = args.output_file[0]
@@ -402,7 +451,10 @@ def draw_networkx(args,weightDic,cmdIPsDic,sourceDic,cmdToArray):
 
 def add_IPnodes(G,cmdToArray,cmdIPsDic):
     """  Adds IP edges to command nodes
-    Input: G (NetworkX graph) - graph to add IP edges to, cmdToArray (dict) - maps command to array style command
+    Input:
+        G (NetworkX graph) - graph to add IP edges to
+        cmdToArray (dict) - maps command to array style command
+        cmdIPsDic (dict) - maps command to dict that contains source and IP addresses
     cmdIPsDic (dict) - maps command to IPs that ran command
     """
     nodes = list(G.nodes())
@@ -415,8 +467,11 @@ def add_IPnodes(G,cmdToArray,cmdIPsDic):
 
 def get_IPs(cmd,dic):
     """ Finds and returns all IP addressses that ran a command
-    Input: cmd (str) - command in array style, dic (dict) - dict with commands mapped to source IPs
-    Output: (list) unique IPs that ran command
+    Input:
+        cmd (str) - command in array style
+        dic (dict) - dict with commands mapped to source IPs
+    Output:
+        (list) unique IPs that ran command
     """
     ips = []
 
@@ -427,8 +482,13 @@ def get_IPs(cmd,dic):
 
 def set_nodeColors(G,sourceDic,id_name):
     """ Sets source as an attribute for each command node, returns nodeTypeDic and color list
-    Input: G (NetworkX graph) - graph with command nodes, sourceDic (dict) - maps command nodes to source label
-    Output: nodeTypeDic (dict) - maps node type with nodes, colorslist (list) - list of color for node types
+    Input:
+        G (NetworkX graph) - graph with command nodes
+        sourceDic (dict) - maps command nodes to source label
+        id_name (str) - column name of identifier column
+    Output:
+        nodeTypeDic (dict) - maps node type with nodes
+        colorslist (list) - list of color for node types
     """
     nx.set_node_attributes(G,name="source",values=sourceDic)
     sources = set(nx.get_node_attributes(G,"source").values())
@@ -446,9 +506,13 @@ def set_nodeColors(G,sourceDic,id_name):
 
 def get_nodeTypeDic(types,nodes,sourceDic,id_name):
     """ Maps node label to list of nodes and returns dict
-    Input: types (list) - list of node types/labels, nodes (NetworkX nodes) - nodes of NetworkX graph, 
-    sourceDic (dict) - maps command nodes to source label
-    Output: nodeTypeDic (dict) - maps node type to list of nodes with that node type
+    Input:
+        types (list) - list of node types/labels
+        nodes (NetworkX nodes) - nodes of NetworkX graph
+        sourceDic (dict) - maps command nodes to source label
+        id_name (str) - column name of identifier column
+    Output:
+        nodeTypeDic (dict) - maps node type to list of nodes with that node type
     """
     nodeTypeDic = {nodetype:[] for nodetype in types}
     
@@ -463,8 +527,11 @@ def get_nodeTypeDic(types,nodes,sourceDic,id_name):
 
 def get_numberNodes(G,sourceDic):
     """ Returns dict that has nodes mapped to a unique integer label
-    Input: G (NetworkX graph) - graph with IP and command nodes, sourceDic (dict) - maps command nodes to source label
-    Output: labeled_G (NetworkX graph) - , labels (dict) - maps node to labeled number
+    Input:
+        G (NetworkX graph) - graph with IP and command nodes
+        sourceDic (dict) - maps command nodes to source label
+    Output:
+        labels (dict) - maps node to labeled number
     """
     nodes = G.nodes()
     nodeToNum = {}
@@ -486,8 +553,13 @@ def get_numberNodes(G,sourceDic):
 
 def plot_networkx(G,output_file,labels,colorslist,nodeTypeDic,id_name,figsize=(12,8),font_size=10,node_size=350,ip_alpha=0.2,cmd_alpha=0.2,edge_alpha=0.2):
     """ Plots NetworkX graph and saves image to output file
-    Input: G (NetworkX graph) - graph with IP and command nodes to graph, output_file (str) - filename for network graph image
-    labels (dict) - maps node to integer label, colorslist (list) - list of node colors, nodeTypeDic (dict) - maps node type to list of nodes
+    Input:
+        G (NetworkX graph) - graph with IP and command nodes to graph
+        output_file (str) - filename for network graph image
+        labels (dict) - maps node to integer label
+        colorslist (list) - list of node colors
+        nodeTypeDic (dict) - maps node type to list of nodes
+        id_name (str) - column name of identifier column (eg. "ip")
     """  
     fig,ax = plt.subplots(1,figsize=figsize)
 
@@ -521,8 +593,10 @@ def plot_networkx(G,output_file,labels,colorslist,nodeTypeDic,id_name,figsize=(1
 
 def get_clusters(G):
     """ Finds clusters of commands in NetworkX graph. A cluster is considered to be nodes that are connected by an edge
-    Input: G (NetworkX graph) - graph to find clusters
-    Output: cmdToCluster (dict) - key: command node (str) / value: cluster ID (int)
+    Input:
+        G (NetworkX graph) - graph to find clusters
+    Output:
+        cmdToCluster (dict) - key: command node (str) / value: cluster ID (int)
     """
     ip_regex = r'^\d+\.\d+\.\d+\.\d+$'
     components = [list(comp) for comp in list(nx.connected_components(G))]
