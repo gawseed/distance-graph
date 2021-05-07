@@ -217,30 +217,33 @@ def get_cmdIPsDic(input_file,loggedInOnly,node_name,label_name,id_name):
 
     return cmdIPsDic
 
-def get_labelDic(input_file,node_name,label):
+def get_labelDic(input_file,node_name,label_name):
     """ Returns dict that maps node to list of labels node has
     Input: input_file (str) - FSDB input file
     Output: labelDic (dict) - key: node (str) / value: list of labels
     """
     labelDic = {}
 
-    db = pyfsdb.Fsdb(input_file)
+    for filename in input_file:
+        db = pyfsdb.Fsdb(filename)
 
-    node_index = db.get_column_number(node_name)
-    label_index = db.get_column_number(label)
+        node_index = db.get_column_number(node_name)
+        label_index = db.get_column_number(label_name)
 
-    for row in db:
-        node = row[node_index]
-        label = row[label_index]
+        for row in db:
+            node = row[node_index]
+            label = row[label_index]
+            
+            if node[0]!="[":
+                node = str([node])
+            
+            if node not in labelDic:
+                labelDic[node] = [label]
+            else:
+                if label not in labelDic[node]:
+                    labelDic[node].append(label)
         
-        if node[0]!="[":
-            node = str([node])
-        
-        if node not in labelDic:
-            labelDic[node] = [label]
-        else:
-            if label not in labelDic[node]:
-                labelDic[node].append(label)
+        db.close()
 
     return labelDic
 
