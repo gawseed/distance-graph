@@ -118,8 +118,12 @@ def get_info(input_file,node_name,label,id_name,cmd2template):
     Output: weightDic (dict) - key: pair of commands (tuple) / value: weight (float), cmdIPsDic (dict) - key: command (str) / value: dictionary with key: source (str) & value: IPs that ran command (list),
     sourceDic (dict) - key: command (str) / value: source label (str), cmdToArray (dict) - key: command (str) / value: array style command (str)
     """
-    db = pyfsdb.Fsdb(input_file)
-    df = db.get_pandas(data_has_comment_chars=True)
+    df = pd.DataFrame()
+
+    for filename in input_file:
+        db = pyfsdb.Fsdb(filename)
+        data = db.get_pandas(data_has_comment_chars=True)
+        df = pd.concat([df,data]).reset_index(drop=True)
 
     df[node_name] = df[node_name].apply(lambda x: str([x]) if x[0]!="[" else x)
 
