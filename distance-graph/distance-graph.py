@@ -768,7 +768,7 @@ def main():
     else:
         cmd2template = None
 
-    weightDic,cmdIPsDic,sourceDic,cmdToArray = get_info(args.input_file[0],node_name,label_name,id_name,cmd2template)
+    weightDic,cmdIPsDic,sourceDic,cmdToArray = get_info(args.input_file,node_name,label_name,id_name,cmd2template)
     G,weighted_edges,labels,clusters = draw_networkx(args,weightDic,cmdIPsDic,sourceDic,cmdToArray)
 
     ## create edge list to FSDB file
