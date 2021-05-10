@@ -455,7 +455,6 @@ def add_IPnodes(G,cmdToArray,cmdIPsDic):
         G (NetworkX graph) - graph to add IP edges to
         cmdToArray (dict) - maps command to array style command
         cmdIPsDic (dict) - maps command to dict that contains source and IP addresses
-    cmdIPsDic (dict) - maps command to IPs that ran command
     """
     nodes = list(G.nodes())
 
