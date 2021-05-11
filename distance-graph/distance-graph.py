@@ -150,7 +150,7 @@ def get_info(input_file,node_name,label,id_name,cmd2template):
         df2 = df2[df2[node_name]!='[]']
         cmds = list(df2[node_name].unique())
 
-        cmdIPsDic = get_cmdIPsDic(input_file,loggedInOnly,node_name,label,id_name)
+        cmdIPsDic,sourceDic = get_cmdIPsDic(input_file,loggedInOnly,node_name,label,id_name)
     else:
         df2 = df.copy()
         df2 = df2[df2[node_name]!='[]']
@@ -171,7 +171,7 @@ def get_info(input_file,node_name,label,id_name,cmd2template):
     weightDic = get_weights(distDic)
 
     if cmdIPsDic:
-        sourceDic = {cmd:"+".join(list(cmdIPsDic[cmdToArray[cmd]].keys()))+"_"+node_name for cmd in unique_cmds}
+        sourceDic.update({cmd:"+".join(list(cmdIPsDic[cmdToArray[cmd]].keys()))+"_"+node_name for cmd in unique_cmds})
     else:
         sourceDic = {cmd:"+".join(labelDic[cmdToArray[cmd]])+"_"+node_name for cmd in unique_cmds}
 
