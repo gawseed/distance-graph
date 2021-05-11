@@ -211,6 +211,7 @@ def get_cmdIPsDic(input_file,loggedInOnly,node_name,label_name,id_name):
         cmdIPsDic (dict) - key: command (str) / value: dictionary with key: source (str) & value: IPs that ran command (list)
     """
     cmdIPsDic = {}
+    labelIPDic = {}
 
     for filename in input_file:
         db = pyfsdb.Fsdb(filename)
@@ -240,9 +241,16 @@ def get_cmdIPsDic(input_file,loggedInOnly,node_name,label_name,id_name):
                 else:
                     cmdIPsDic[node][label] = [ident]
 
+            if ident not in labelIPDic:
+                labelIPDic[ident] = [label]
+            elif ident in labelIPDic and label not in labelIPDic[ident]:
+                labelIPDic[ident] = labelIPDic[ident] + [label]
+
         db.close()
 
-    return cmdIPsDic
+    sourceDic = {ip:"+".join(labelIPDic[ip])+"_"+id_name for ip in labelIPDic.keys()}
+
+    return cmdIPsDic,sourceDic
 
 def get_labelDic(input_file,node_name,label_name):
     """ Returns dict that maps node to list of labels node has
