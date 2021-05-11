@@ -499,15 +499,17 @@ def set_nodeColors(G,sourceDic,id_name):
         colorslist (list) - list of color for node types
     """
     nx.set_node_attributes(G,name="source",values=sourceDic)
-    sources = set(nx.get_node_attributes(G,"source").values())
-
-    mapping = dict(zip(sorted(sources),itertools.count()))
+    sources = set(sorted(nx.get_node_attributes(G,"source").values()))
 
     if id_name:
-        mapping[id_name]=len(mapping)
+        id_labels = [label for label in sources if id_name in label]
+    else:
+        id_labels = []
 
-    types=list(mapping.keys())
-    colorslist = ["b","c","r","y","g","darkorange"]
+    source_labels = [label for label in sources if label not in id_labels]
+    types = sorted(source_labels) + sorted(id_labels)
+
+    colorslist = ["b","c","r","y","g","tab:brown","tab:orange","tab:purple"]
 
     nodeTypeDic = get_nodeTypeDic(types,G.nodes(),sourceDic,id_name)
     return nodeTypeDic,colorslist
