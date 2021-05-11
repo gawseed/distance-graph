@@ -532,7 +532,7 @@ def get_nodeTypeDic(types,nodes,sourceDic,id_name):
             
     return nodeTypeDic
 
-def get_numberNodes(G,sourceDic):
+def get_numberNodes(G):
     """ Returns dict that has nodes mapped to a unique integer label
     Input:
         G (NetworkX graph) - graph with IP and command nodes
@@ -541,20 +541,12 @@ def get_numberNodes(G,sourceDic):
         labels (dict) - maps node to labeled number
     """
     nodes = G.nodes()
-    nodeToNum = {}
+    labels = {}
 
     i=0
     for node in nodes:
-        nodeToNum[node] = i
+        labels[node] = i
         i += 1
-        
-    numToNode = {v:k for k,v in nodeToNum.items()}
-    labeled_G = G
-
-    labels={}
-    for node in labeled_G.nodes():
-        if node in sourceDic:
-            labels[node] = nodeToNum[node]
     
     return labels
 
