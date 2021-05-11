@@ -343,6 +343,7 @@ def get_uniqueCmds(cmds,cmdIPsDic,template2cmd):
 
     if cmdIPsDic:
         cmdIPsDic = update_cmdIPsDic(cmdIPsDic,cmdTemplateDic)
+        unique_cmds = list(cmdIPsDic.keys())
     
     return unique_cmds,cmdIPsDic
 
