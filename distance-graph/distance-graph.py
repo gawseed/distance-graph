@@ -527,11 +527,8 @@ def get_nodeTypeDic(types,nodes,sourceDic,id_name):
     nodeTypeDic = {nodetype:[] for nodetype in types}
     
     for node in nodes:
-        if node not in sourceDic:
-            nodeTypeDic[id_name] = nodeTypeDic[id_name]+[node]
-        else:
-            source = sourceDic[node]
-            nodeTypeDic[source] = nodeTypeDic[source]+[node]
+        source = sourceDic[node]
+        nodeTypeDic[source] = nodeTypeDic[source]+[node]
             
     return nodeTypeDic
 
