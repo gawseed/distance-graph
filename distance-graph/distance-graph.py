@@ -569,7 +569,7 @@ def plot_networkx(G,output_file,labels,colorslist,nodeTypeDic,id_name,figsize=(1
         color = colorslist[i]
         i+=1
 
-        if nodetype==id_name:
+        if id_name and id_name in nodetype:
             alpha=ip_alpha
             nx.draw_networkx_nodes(G,pos=pos,nodelist=nodelist,ax=ax,\
                         label=nodetype,alpha=alpha,node_size=node_size,node_shape="^",node_color=color)
@@ -580,7 +580,7 @@ def plot_networkx(G,output_file,labels,colorslist,nodeTypeDic,id_name,figsize=(1
 
     nx.draw_networkx_edges(G,pos=pos,alpha=edge_alpha)
     nx.draw_networkx_labels(G,pos=pos,labels=labels,font_size=font_size)
-    ax.legend(scatterpoints=1)
+    ax.legend(scatterpoints=1, markerscale=0.75)
 
     ## remove black border
     ax.spines['top'].set_visible(False)
