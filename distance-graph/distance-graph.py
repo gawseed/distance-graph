@@ -747,15 +747,6 @@ class CommandGraph:
     #
     return command2template
 
-  def write_cmd_to_template(self, output_file=None):
-    command2template = self.cmd_to_template()
-    if output_file is None:
-      output_file = FLAGS.output
-    with open(output_file, 'wb') as fout:
-      pickle.dump(command2template, fout)
-    print('wrote ' + output_file)
-
-
 def main():
     args = parse_args()
     node_name = args.node_name
