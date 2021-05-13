@@ -1,10 +1,8 @@
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
-import sys
 import pyfsdb
 import pandas as pd
 import os
 import json
-import random
 import collections
 import tqdm
 import matplotlib.pyplot as plt
