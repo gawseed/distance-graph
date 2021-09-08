@@ -780,17 +780,24 @@ class CommandGraph:
 
 def main():
     args = parse_args()
-    node_name = args.node_name
-    label_name = args.label_name
-    id_name = args.id_name
+
+    ## get list of file args and remove None input files args that were not specified
+    file_args = list(filter(None,[args.input_file1, args.input_file2, args.input_file3]))
+    output_names = args.output_names
+
+    # node_name = args.node_name
+    # label_name = args.label_name
+    # id_name = args.id_name
 
     if args.templatize:
-        cmd2template = get_cmd2template(args.input_file,node_name,label_name)
+        cmd2template = get_cmd2template(file_args)
+        # cmd2template = get_cmd2template(args.input_file,node_name,label_name)
     else:
         cmd2template = None
 
-    weightDic,cmdIPsDic,sourceDic,cmdToArray = get_info(args.input_file,node_name,label_name,id_name,cmd2template)
-    G,weighted_edges,labels,clusters = draw_networkx(args,weightDic,cmdIPsDic,sourceDic,cmdToArray)
+    weightDic,cmdIPsDic,sourceDic,cmdToArray = get_info(file_args, output_names, cmd2template)
+    # weightDic,cmdIPsDic,sourceDic,cmdToArray = get_info(args.input_file,node_name,label_name,id_name,cmd2template)
+    G,weighted_edges,labels,clusters = draw_networkx(args,output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray)
 
     ## create edge list to FSDB file
     if (args.edge_list):
