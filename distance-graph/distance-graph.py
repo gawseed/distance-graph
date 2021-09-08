@@ -56,7 +56,7 @@ def parse_args():
                         help="The node size for each node")
 
     parser.add_argument("output_file", type=str, nargs=1, 
-                        required=True, help="Pass path and filename for output network graph")
+                        help="Pass path and filename for output network graph")
 
     args = parser.parse_args()
 
