@@ -140,6 +140,8 @@ def map_output_names(file_args, output_names):
             mapNameDic[input_names[i]] = output_names[i]
 
     return mapNameDic
+
+def get_info(file_args, output_names,cmd2template):
     """ Return four dictionaries: (1) weights between commands, (2) IPs that ran commands, (3) sources for each command, and (4) command to array style string
     Input:
         input_file (list) - list of FSDB files with IP and command data
@@ -155,26 +157,34 @@ def map_output_names(file_args, output_names):
     """
     df = pd.DataFrame()
 
-    for filename in input_file:
+    node_name, label_name, id_name = get_outputNames(output_names)
+
+    for inputfile_args in file_args:
+        filename = inputfile_args[0]
+        # filename, input_node, input_label, input_identifier = get_inputFile_args(inputfile_args)
+        map_input2output_names = map_output_names(inputfile_args, output_names)
+
         db = pyfsdb.Fsdb(filename)
         data = db.get_pandas(data_has_comment_chars=True)
+        data = data.rename(columns=map_input2output_names)
         df = pd.concat([df,data]).reset_index(drop=True)
+        db.close()
 
     df[node_name] = df[node_name].apply(lambda x: str([x]) if x[0]!="[" else x)
 
-    if id_name:
-        loggedInOnly = get_loggedInOnly(df,node_name,label,id_name)
+    if id_name != '':
+        loggedInOnly = get_loggedInOnly(df,node_name,label_name,id_name)
 
         df2 = df.copy()[~df[id_name].isin(loggedInOnly)]
         df2 = df2[df2[node_name]!='[]']
         cmds = list(df2[node_name].unique())
 
-        cmdIPsDic,sourceDic = get_cmdIPsDic(input_file,loggedInOnly,node_name,label,id_name)
+        cmdIPsDic,sourceDic = get_cmdIPsDic(file_args,loggedInOnly,id_name)
     else:
         df2 = df.copy()
         df2 = df2[df2[node_name]!='[]']
         cmds = list(df2[node_name].unique())
-        labelDic = get_labelDic(input_file,node_name,label)
+        labelDic = get_labelDic(file_args)
         cmdIPsDic = None
 
     if cmd2template:
