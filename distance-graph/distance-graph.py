@@ -281,7 +281,7 @@ def get_cmdIPsDic(file_args,loggedInOnly,id_name):
 
     return cmdIPsDic,sourceDic
 
-def get_labelDic(input_file,node_name,label_name):
+def get_labelDic(file_args):
     """ Returns dict that maps node to list of labels node has
     Input:
         input_file (str) - FSDB input file
@@ -292,11 +292,12 @@ def get_labelDic(input_file,node_name,label_name):
     """
     labelDic = {}
 
-    for filename in input_file:
+    for inputfile_args in file_args:
+        filename, input_node_name, input_label_name, input_id_name = get_inputFile_args(inputfile_args)
         db = pyfsdb.Fsdb(filename)
 
-        node_index = db.get_column_number(node_name)
-        label_index = db.get_column_number(label_name)
+        node_index = db.get_column_number(input_node_name)
+        label_index = db.get_column_number(input_label_name)
 
         for row in db:
             node = row[node_index]
