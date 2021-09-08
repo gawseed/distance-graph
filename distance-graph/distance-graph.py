@@ -19,14 +19,17 @@ def parse_args():
                             description=__doc__,
                             epilog='Example Usage: python distance-graph.py -n command -l source -i ip --templatize -e 0.945 -E myedgelist.fsdb -c myclusterlist.fsdb -w 12.5 -H 8.5 -fs 8 -ns 250 "../example/commands.fsdb" distance-graph.png')
 
-    parser.add_argument("-n", "--node-name", default=None, type=str,
-                        required=True, help="The column name of node")
+    parser.add_argument("-1", "--input_file1", type=str, nargs=4,
+                        required=True, help="Pass the (required) input filename, (required) node column name (command), node's label column name (source), node's identifier column name (ip). Pass empty string '' for the optional label and identifier columns.")
 
-    parser.add_argument("-l", "--label-name", default=None, type=str,
-                        help="The column name of the node's label")
+    parser.add_argument("-2", "--input_file2", type=str, default=None, nargs=4,
+                        help="Pass the second input filename, node column name (command), node's label column name (source), node's identifier column name (ip)")
 
-    parser.add_argument("-i", "--id-name", default=None, type=str,
-                        help="The column name of the node's identifier")
+    parser.add_argument("-3", "--input_file3", type=str, default=None, nargs=4,
+                        help="Pass the third input filename, node column name (command), node's label column name (source), node's identifier column name (ip)")
+
+    parser.add_argument("-on", "--output_names", type=str, nargs=3,
+                        required=True, help="Pass the (required) node name (command), label name (source), identifier name (ip). Pass empty string '' for the optional label and identifier names.")
 
     parser.add_argument("--templatize", default=False, action="store_true",
                         help="Set this argument to templatize the nodes")
@@ -52,12 +55,8 @@ def parse_args():
     parser.add_argument("-ns", "--node-size", default=300, type=int,
                         help="The node size for each node")
 
-    parser.add_argument("input_file", type=str,
-                        nargs='*',
-                        help="")
-
-    parser.add_argument("output_file", type=str,
-                        nargs=1, help="")
+    parser.add_argument("output_file", type=str, nargs=1, 
+                        required=True, help="Pass path and filename for output network graph")
 
     args = parser.parse_args()
 
