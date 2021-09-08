@@ -228,7 +228,7 @@ def get_loggedInOnly(df,node_name,label,id_name):
 
     return loggedInOnly
 
-def get_cmdIPsDic(input_file,loggedInOnly,node_name,label_name,id_name):
+def get_cmdIPsDic(file_args,loggedInOnly,id_name):
     """ Returns dict that contains IP addresses that ran the command and from what source
     Input:
         input_file (str) - FSDB input file
@@ -242,12 +242,13 @@ def get_cmdIPsDic(input_file,loggedInOnly,node_name,label_name,id_name):
     cmdIPsDic = {}
     labelIPDic = {}
 
-    for filename in input_file:
+    for inputfile_args in file_args:
+        filename, input_node_name, input_label_name, input_id_name = get_inputFile_args(inputfile_args)
         db = pyfsdb.Fsdb(filename)
 
-        id_index = db.get_column_number(id_name)
-        node_index = db.get_column_number(node_name)
-        label_index = db.get_column_number(label_name)
+        id_index = db.get_column_number(input_id_name)
+        node_index = db.get_column_number(input_node_name)
+        label_index = db.get_column_number(input_label_name)
 
         for row in db:
             ident = row[id_index] ## identifier (IP address)
@@ -264,8 +265,7 @@ def get_cmdIPsDic(input_file,loggedInOnly,node_name,label_name,id_name):
             if node not in cmdIPsDic:
                 cmdIPsDic[node] = {label: [ident]}
             else:
-                if label in cmdIPsDic[node]:
-                    if ident not in cmdIPsDic[node][label]:
+                if (label in cmdIPsDic[node]) and (ident not in cmdIPsDic[node][label]):
                         cmdIPsDic[node][label].append(ident)
                 else:
                     cmdIPsDic[node][label] = [ident]
