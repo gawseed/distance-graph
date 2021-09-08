@@ -116,7 +116,30 @@ def get_commandCounts(file_args):
 
     return cmdCount
 
-def get_info(input_file,node_name,label,id_name,cmd2template):
+def get_inputFile_args(inputfile_args):
+    filename = inputfile_args[0]
+    node_name = inputfile_args[1]
+    label_name = inputfile_args[2]
+    identifier_name = inputfile_args[3]
+
+    return filename, node_name, label_name, identifier_name
+
+def get_outputNames(output_names):
+    node_name = output_names[0]
+    label_name = output_names[1]
+    identifier_name = output_names[2]
+
+    return node_name, label_name, identifier_name
+
+def map_output_names(file_args, output_names):
+    mapNameDic = {}
+    input_names = file_args[1:]
+
+    for i in range(len(input_names)):
+        if output_names[i] != '':
+            mapNameDic[input_names[i]] = output_names[i]
+
+    return mapNameDic
     """ Return four dictionaries: (1) weights between commands, (2) IPs that ran commands, (3) sources for each command, and (4) command to array style string
     Input:
         input_file (list) - list of FSDB files with IP and command data
