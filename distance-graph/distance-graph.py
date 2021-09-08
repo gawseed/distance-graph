@@ -453,7 +453,7 @@ def get_weights(distDic):
 
     return weightDic
 
-def draw_networkx(args,weightDic,cmdIPsDic,sourceDic,cmdToArray):
+def draw_networkx(args,output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray):
     """ Finds the weighted edges and plots the NetworkX graph. Obtains labels for nodes and cluster IDs for connected nodes
     Input:
         args (argument parser) - parser of command line arguments,
@@ -470,6 +470,7 @@ def draw_networkx(args,weightDic,cmdIPsDic,sourceDic,cmdToArray):
     threshold = args.edge_weight
     output_file = args.output_file[0]
     figsize = tuple([args.width,args.height])
+    node_name, label_name, id_name = get_outputNames(output_names)
 
     edgeweight = [tuple(list(k)+[v]) for k,v in weightDic.items()]
 
@@ -483,8 +484,8 @@ def draw_networkx(args,weightDic,cmdIPsDic,sourceDic,cmdToArray):
     if cmdIPsDic:
         add_IPnodes(G,cmdToArray,cmdIPsDic)
     
-    nodeTypeDic,colorslist = set_nodeColors(G,sourceDic,args.id_name)
-    plot_networkx(G,output_file,labels,colorslist,nodeTypeDic,args.id_name,figsize=figsize,font_size=args.font_size,node_size=args.node_size)
+    nodeTypeDic,colorslist = set_nodeColors(G,sourceDic,id_name)
+    plot_networkx(G,output_file,labels,colorslist,nodeTypeDic,id_name,figsize=figsize,font_size=args.font_size,node_size=args.node_size)
 
     return G,weighted_edges,labels,clusters
 
