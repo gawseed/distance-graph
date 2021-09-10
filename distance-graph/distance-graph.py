@@ -95,8 +95,8 @@ def get_commandCounts(file_args):
     cmdCount = {}
 
     for input_file in file_args:
-        filename = file_args[0]
-        node_name = file_args[1]
+        filename = input_file[0]
+        node_name = input_file[1]
 
         db = pyfsdb.Fsdb(filename)
         node_index = db.get_column_number(node_name)
