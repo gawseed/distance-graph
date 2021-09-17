@@ -540,20 +540,25 @@ def set_nodeColors(G,sourceDic,id_name):
     source_labels = [label for label in sources if label not in id_labels]
     types = sorted(source_labels) + sorted(id_labels)
 
-    #colorslist = ["b","c","r","y","g","tab:brown","tab:orange","tab:purple"]
     colorslist = get_colors(types)
 
     nodeTypeDic = get_nodeTypeDic(types,G.nodes(),sourceDic,id_name)
     return nodeTypeDic,colorslist
 
 def get_colors(types):
+    """ Given all types of nodes to graph, return list of colors to use for each node type. Nodes that come from the same sources will have the same colors
+    Input:
+        types (list): list of node types to graph (will appear in legend)
+    Output:
+        colors_to_use (list): list of colors to use for each node
+    """
     sourceToColor = {}
     colors_to_use = []
     colorslist = ["b","c","r","y","g","tab:brown","tab:orange","tab:purple"]
 
     for type in types:
         source = type.split('_')[0]
-        
+
         if source not in sourceToColor:
             sourceToColor[source] = colorslist[0]
             colorslist = colorslist[1:]
