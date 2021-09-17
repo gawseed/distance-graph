@@ -540,10 +540,27 @@ def set_nodeColors(G,sourceDic,id_name):
     source_labels = [label for label in sources if label not in id_labels]
     types = sorted(source_labels) + sorted(id_labels)
 
-    colorslist = ["b","c","r","y","g","tab:brown","tab:orange","tab:purple"]
+    #colorslist = ["b","c","r","y","g","tab:brown","tab:orange","tab:purple"]
+    colorslist = get_colors(types)
 
     nodeTypeDic = get_nodeTypeDic(types,G.nodes(),sourceDic,id_name)
     return nodeTypeDic,colorslist
+
+def get_colors(types):
+    sourceToColor = {}
+    colors_to_use = []
+    colorslist = ["b","c","r","y","g","tab:brown","tab:orange","tab:purple"]
+
+    for type in types:
+        source = type.split('_')[0]
+        
+        if source not in sourceToColor:
+            sourceToColor[source] = colorslist[0]
+            colorslist = colorslist[1:]
+        
+        colors_to_use.append(sourceToColor[source])
+    
+    return colors_to_use
 
 def get_nodeTypeDic(types,nodes,sourceDic,id_name):
     """ Maps node label to list of nodes and returns dict
