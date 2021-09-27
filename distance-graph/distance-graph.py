@@ -171,6 +171,10 @@ def get_info(file_args, output_names,cmd2template):
 
         db = pyfsdb.Fsdb(filename)
         data = db.get_pandas(data_has_comment_chars=True)
+
+        if inputfile_args[2] != '':
+            data['label'] = inputfile_args[2]
+
         data = data.rename(columns=map_input2output_names)
         df = pd.concat([df,data]).reset_index(drop=True)
         db.close()
