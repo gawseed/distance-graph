@@ -307,11 +307,12 @@ def get_labelDic(file_args):
         db = pyfsdb.Fsdb(filename)
 
         node_index = db.get_column_number(input_node_name)
-        label_index = db.get_column_number(input_label_name)
+        label = input_label_name
+        # label_index = db.get_column_number(input_label_name)
 
         for row in db:
             node = row[node_index]
-            label = row[label_index]
+            # label = row[label_index]
             
             if node[0]!="[":
                 node = str([node])
