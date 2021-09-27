@@ -485,7 +485,11 @@ def draw_networkx(args,output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray):
 
     edgeweight = [tuple(list(k)+[v]) for k,v in weightDic.items()]
 
-    weighted_edges = [x for x in edgeweight if x[2] > threshold]
+    if args.top_k:
+        k = args.top_k
+        weighted_edges = get_topK_edges(k, edgeweight)
+    else:
+        weighted_edges = [x for x in edgeweight if x[2] > threshold]
 
     G = nx.Graph()
     G.add_weighted_edges_from(weighted_edges)
