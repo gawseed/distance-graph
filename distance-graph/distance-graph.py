@@ -37,6 +37,9 @@ def parse_args():
     parser.add_argument("-e", "--edge-weight", default=.95, type=float,
                         help="The edge weight threshold to use")
 
+    parser.add_argument("-k", "--top-k", default=None, type=int,
+                        help="Top k command nodes to graph")
+
     parser.add_argument("-E", "--edge-list", default=None, type=str,
                         help="Output enumerated edge list to here")
 
