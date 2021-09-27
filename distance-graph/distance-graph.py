@@ -574,7 +574,7 @@ def set_nodeColors(G,sourceDic,id_name):
     nx.set_node_attributes(G,name="source",values=sourceDic)
     sources = set(sorted(nx.get_node_attributes(G,"source").values()))
 
-    if id_name:
+    if id_name != '':
         id_labels = [label for label in sources if id_name in label]
     else:
         id_labels = []
