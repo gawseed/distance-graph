@@ -257,7 +257,7 @@ def get_cmdIPsDic(file_args,loggedInOnly,id_name):
 
         id_index = db.get_column_number(input_id_name)
         node_index = db.get_column_number(input_node_name)
-        label_index = db.get_column_number(input_label_name)
+        # label_index = db.get_column_number(input_label_name)
 
         for row in db:
             ident = row[id_index] ## identifier (IP address)
@@ -266,7 +266,8 @@ def get_cmdIPsDic(file_args,loggedInOnly,id_name):
                 continue
             
             node = row[node_index]
-            label = row[label_index]
+            # label = row[label_index]
+            label = input_label_name
             
             if node[0]!="[":
                 node = str([node])
