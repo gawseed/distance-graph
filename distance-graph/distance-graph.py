@@ -504,6 +504,33 @@ def draw_networkx(args,output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray):
 
     return G,weighted_edges,labels,clusters
 
+def get_topK_edges(k,edgeweight):
+    """
+    Input: k=number of edges for each node, nodes=nodes to get top K from, edgeweight=list of edgeweights
+    Output: list of top K edges
+    """
+    # topK = {cmd:[] for cmd in nodes}
+    topK = {}
+    edgeweight = sorted(edgeweight, key=lambda x: x[2], reverse=True)
+
+    for i in range(len(edgeweight)):
+        edge = edgeweight[i]
+        cmd1,cmd2,weight = edge
+
+        if len(topK) < k:
+            if cmd1 in topK:
+                topK[cmd1] = topK[cmd1] + [edge]
+            else:
+                topK[cmd1] = [edge]
+            
+            if cmd2 in topK:
+                topK[cmd2] = topK[cmd2] + [edge]
+            else:
+                topK[cmd2] = [edge]
+                    
+    topK_edges = list(set([tups for lst in list(topK.values()) for tups in lst]))
+    
+    return topK_edges
 def add_IPnodes(G,cmdToArray,cmdIPsDic):
     """  Adds IP edges to command nodes
     Input:
