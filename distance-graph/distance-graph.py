@@ -137,6 +137,8 @@ def get_outputNames(output_names):
 def map_output_names(file_args, output_names):
     mapNameDic = {}
     input_names = file_args[1:]
+    if input_names[1] != '':
+        input_names[1] = 'label'
 
     for i in range(len(input_names)):
         if output_names[i] != '':
