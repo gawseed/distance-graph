@@ -145,16 +145,34 @@ def get_commandCounts(file_args):
         db = pyfsdb.Fsdb(filename)
         node_index = db.get_column_number(node_name)
 
-        for row in db:
-            node = row[node_index]
-            
-            if node[0] != "[":
-                node = str([node])
-            
-            if node not in cmdCount:
-                cmdCount[node] = 1
-            else:
-                cmdCount[node] += 1
+        try:
+            login_index = db.get_column_number('login_successful')
+
+            for row in db:
+                login_success = row[login_index]
+
+                if login_success == 'False':
+                    continue
+                else:
+                    node = row[node_index]
+                    if node[0] != "[":
+                        node = str([node])
+                    
+                    if node not in cmdCount:
+                        cmdCount[node] = 1
+                    else:
+                        cmdCount[node] += 1
+        except:
+            for row in db:
+                node = row[node_index]
+                
+                if node[0] != "[":
+                    node = str([node])
+                
+                if node not in cmdCount:
+                    cmdCount[node] = 1
+                else:
+                    cmdCount[node] += 1
         
         db.close()
 
