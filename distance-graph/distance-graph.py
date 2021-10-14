@@ -314,7 +314,7 @@ def get_loggedInOnly(df,node_name,label,id_name):
 
     return loggedInOnly
 
-def get_cmdIPsDic(file_args,loggedInOnly,id_name):
+def get_cmdIPsDic(file_args,loggedInOnly,id_name,login_index):
     """ Returns dict that contains IP addresses that ran the command and from what source
     Input:
         input_file (str) - FSDB input file
@@ -340,6 +340,9 @@ def get_cmdIPsDic(file_args,loggedInOnly,id_name):
             ident = row[id_index] ## identifier (IP address)
             
             if ident in loggedInOnly: ## if IP only logged in, do not record
+                continue
+
+            if (login_index != False) and (row[login_index] == 'False'):
                 continue
             
             node = row[node_index]
@@ -368,7 +371,7 @@ def get_cmdIPsDic(file_args,loggedInOnly,id_name):
 
     return cmdIPsDic,sourceDic
 
-def get_labelDic(file_args):
+def get_labelDic(file_args, login_index):
     """ Returns dict that maps node to list of labels node has
     Input:
         input_file (str) - FSDB input file
@@ -390,6 +393,9 @@ def get_labelDic(file_args):
         for row in db:
             node = row[node_index]
             # label = row[label_index]
+
+            if (login_index != False) and (row[login_index] == 'False'):
+                continue
             
             if node[0]!="[":
                 node = str([node])
