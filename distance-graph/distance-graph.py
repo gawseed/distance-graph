@@ -265,12 +265,12 @@ def get_info(file_args, output_names,cmd2template):
         df2 = df2[df2[node_name]!='[]']
         cmds = list(df2[node_name].unique())
 
-        cmdIPsDic,sourceDic = get_cmdIPsDic(file_args,loggedInOnly,id_name)
+        cmdIPsDic,sourceDic = get_cmdIPsDic(file_args,loggedInOnly,id_name,login_index)
     else:
         df2 = df.copy()
         df2 = df2[df2[node_name]!='[]']
         cmds = list(df2[node_name].unique())
-        labelDic = get_labelDic(file_args)
+        labelDic = get_labelDic(file_args,login_index)
         cmdIPsDic = None
 
     if cmd2template:
