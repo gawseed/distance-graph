@@ -614,6 +614,8 @@ def get_topK_edges(k,edgeweight):
     topK_edges = list(set([tups for lst in list(topK.values()) for tups in lst]))
     
     return topK_edges
+
+
 def add_IPnodes(G,cmdToArray,cmdIPsDic):
     """  Adds IP edges to command nodes
     Input:
