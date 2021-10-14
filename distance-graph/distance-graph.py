@@ -29,7 +29,7 @@ def parse_args():
                         help="Pass the third input filename, node column name (command), node's label column name (source), node's identifier column name (ip)")
 
     parser.add_argument("-on", "--output_names", type=str, nargs=3,
-                        required=True, help="Pass the (required) node name (command), label name (source), identifier name (ip). Pass empty string '' for the optional label and identifier names.")
+                        required=True, help="The names to use for output distance graph labels, edge list, and cluster list. Pass the (required) node name (command), label name (source), identifier name (ip). Pass empty string '' for the optional label and identifier names.")
 
     parser.add_argument("--templatize", default=False, action="store_true",
                         help="Set this argument to templatize the nodes")
