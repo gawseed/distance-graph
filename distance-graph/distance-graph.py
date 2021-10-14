@@ -924,7 +924,6 @@ class CommandGraph:
           continue
         command2template[cmd.cmd_str] = template 
         processed_cmds.add(cmd)
-    #
     return command2template
 
 def main():
@@ -934,13 +933,12 @@ def main():
     file_args = list(filter(None,[args.input_file1, args.input_file2, args.input_file3]))
     output_names = args.output_names
 
-    # node_name = args.node_name
-    # label_name = args.label_name
-    # id_name = args.id_name
+    check_fileArgs(file_args, output_names)
+
+    #login_success = args.login_success
 
     if args.templatize:
         cmd2template = get_cmd2template(file_args)
-        # cmd2template = get_cmd2template(args.input_file,node_name,label_name)
     else:
         cmd2template = None
 
