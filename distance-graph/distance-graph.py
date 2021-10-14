@@ -229,13 +229,31 @@ def get_info(file_args, output_names,cmd2template):
         map_input2output_names = map_output_names(inputfile_args, output_names)
 
         db = pyfsdb.Fsdb(filename)
-        data = db.get_pandas(data_has_comment_chars=True)
 
-        if inputfile_args[2] != '':
-            data['label'] = inputfile_args[2]
+        try:
+            login_index = db.get_column_number('login_successful')
+            data = db.get_pandas(data_has_comment_chars=True)
 
-        data = data.rename(columns=map_input2output_names)
+            if inputfile_args[2] != '':
+                data['label'] = inputfile_args[2]
+
+            # print(data.head())
+
+            data = data[data['login_successful']=='True']
+
+            data = data.rename(columns=map_input2output_names)
+        except:
+            login_index = False
+
+            data = db.get_pandas(data_has_comment_chars=True)
+
+            if inputfile_args[2] != '':
+                data['label'] = inputfile_args[2]
+
+            data = data.rename(columns=map_input2output_names)
+        
         df = pd.concat([df,data]).reset_index(drop=True)
+
         db.close()
 
     df[node_name] = df[node_name].apply(lambda x: str([x]) if x[0]!="[" else x)
