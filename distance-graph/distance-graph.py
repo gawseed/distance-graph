@@ -66,6 +66,47 @@ def parse_args():
     return args
 
 
+def check_fileArgs(file_args, output_names):
+    """ Checks input file arguments with output name arguments
+    Input:
+        file_args (list) - list of lists (each list is a list of arguments for input file)
+        output_names (list) - list of names to use for output distance graph and edge and cluster lists
+    """
+    output_node = output_names[0]
+    output_source = output_names[1]
+    output_id = output_names[2]
+
+    if output_node == '':
+        raise Exception("Missing name for output node")
+
+    for i in range(len(file_args)):
+        file_num = i+1
+        inputfile_args = file_args[i]
+
+        inputfile = inputfile_args[0]
+        input_node = inputfile_args[1]
+        input_source = inputfile_args[2]
+        input_id = inputfile_args[3]
+
+        if inputfile == '':
+            raise Exception("Missing input file for input file {}".format(file_num))
+        
+        if input_node == '':
+            raise Exception("Missing node column name for input file {}".format(file_num))
+        
+        if (output_source != '') and (input_source == ''):
+            raise Exception("Source column name for input file {} not provided, but provided in output names.".format(file_num))
+        
+        if (output_source == '') and (input_source != ''):
+            raise Exception("Source column name for input file {} is provided, but not provided in output names.".format(file_num))
+
+        if (output_id != '') and (input_id == ''):
+            raise Exception("Identifier column name for input file {} not provided, but provided in output names.".format(file_num))
+        
+        if (output_id == '') and (input_id != ''):
+            raise Exception("Identifier column name for input file {} is provided, but not provided in output names.".format(file_num))
+
+
 def get_cmd2template(file_args):
     """ Given data file with commands, return dict with command templates
     Input:
