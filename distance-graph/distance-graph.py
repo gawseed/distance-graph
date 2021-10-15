@@ -307,10 +307,11 @@ def get_loggedInOnly(df,node_name,label,id_name):
     labels = df[label].unique()
 
     for ip in loggedIn:
+        cmdsRun = []
         for label_name in labels:
-            cmdsRun = list(df[(df[id_name]==ip) & (df[label]==label_name)][node_name].unique())
-            if cmdsRun == ['[]']:
-                loggedInOnly.append(ip)
+            cmdsRun = cmdsRun + list(df[(df[id_name]==ip) & (df[label]==label_name)][node_name].unique())
+        if cmdsRun == ['[]']:
+            loggedInOnly.append(ip)
 
     return loggedInOnly
 
