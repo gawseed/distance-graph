@@ -145,34 +145,34 @@ def get_commandCounts(file_args):
         db = pyfsdb.Fsdb(filename)
         node_index = db.get_column_number(node_name)
 
-        try:
-            login_index = db.get_column_number('login_successful')
+        # try:
+        #     login_index = db.get_column_number('login_successful')
 
-            for row in db:
-                login_success = row[login_index]
+        #     for row in db:
+        #         login_success = row[login_index]
 
-                if login_success == 'False':
-                    continue
-                else:
-                    node = row[node_index]
-                    if node[0] != "[":
-                        node = str([node])
+        #         if login_success == 'False':
+        #             continue
+        #         else:
+        #             node = row[node_index]
+        #             if node[0] != "[":
+        #                 node = str([node])
                     
-                    if node not in cmdCount:
-                        cmdCount[node] = 1
-                    else:
-                        cmdCount[node] += 1
-        except:
-            for row in db:
-                node = row[node_index]
-                
-                if node[0] != "[":
-                    node = str([node])
-                
-                if node not in cmdCount:
-                    cmdCount[node] = 1
-                else:
-                    cmdCount[node] += 1
+        #             if node not in cmdCount:
+        #                 cmdCount[node] = 1
+        #             else:
+        #                 cmdCount[node] += 1
+        # except:
+        for row in db:
+            node = row[node_index]
+            
+            if node[0] != "[":
+                node = str([node])
+            
+            if node not in cmdCount:
+                cmdCount[node] = 1
+            else:
+                cmdCount[node] += 1
         
         db.close()
 
@@ -230,27 +230,27 @@ def get_info(file_args, output_names,cmd2template):
 
         db = pyfsdb.Fsdb(filename)
 
-        try:
-            login_index = db.get_column_number('login_successful')
-            data = db.get_pandas(data_has_comment_chars=True)
+        # try:
+        #     login_index = db.get_column_number('login_successful')
+        #     data = db.get_pandas(data_has_comment_chars=True)
 
-            if inputfile_args[2] != '':
-                data['label'] = inputfile_args[2]
+        #     if inputfile_args[2] != '':
+        #         data['label'] = inputfile_args[2]
 
-            # print(data.head())
+        #     # print(data.head())
 
-            data = data[data['login_successful']=='True']
+        #     data = data[data['login_successful']=='True']
 
-            data = data.rename(columns=map_input2output_names)
-        except:
-            login_index = False
+        #     data = data.rename(columns=map_input2output_names)
+        # except:
+        login_index = False
 
-            data = db.get_pandas(data_has_comment_chars=True)
+        data = db.get_pandas(data_has_comment_chars=True)
 
-            if inputfile_args[2] != '':
-                data['label'] = inputfile_args[2]
+        if inputfile_args[2] != '':
+            data['label'] = inputfile_args[2]
 
-            data = data.rename(columns=map_input2output_names)
+        data = data.rename(columns=map_input2output_names)
         
         df = pd.concat([df,data]).reset_index(drop=True)
 
