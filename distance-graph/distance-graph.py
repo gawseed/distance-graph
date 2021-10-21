@@ -67,7 +67,7 @@ def parse_args():
 
 
 def check_fileArgs(file_args, output_names):
-    """ Checks input file arguments with output name arguments
+    """ Checks input file arguments with output name arguments to make sure correct arguments are provided. If not, raise exception
     Input:
         file_args (list) - list of lists (each list is a list of arguments for input file)
         output_names (list) - list of names to use for output distance graph and edge and cluster lists
@@ -162,6 +162,10 @@ def get_commandCounts(file_args):
 
 def get_inputFile_args(inputfile_args):
     """ Parse each input file arg and return filename, node column name, label column name, and identifier column name
+    Input:
+        inputfile_args (list) - list of input arguments user provided for input file
+    Output:
+        filename, node_name, label_name, identifier_name (str) - return input arguments
     """
     filename = inputfile_args[0]
     node_name = inputfile_args[1]
@@ -171,6 +175,12 @@ def get_inputFile_args(inputfile_args):
     return filename, node_name, label_name, identifier_name
 
 def get_outputNames(output_names):
+    """ Parse each output name argument and return node name, label name, and identifier name to be used for final output and graph
+    Input:
+        output_names (list) - list of output names to use for node, label, and identifier
+    Output:
+        node_name, label_name, identifier_name (str) - return node, label, and identifier for output
+    """
     node_name = output_names[0]
     label_name = output_names[1]
     identifier_name = output_names[2]
@@ -178,6 +188,13 @@ def get_outputNames(output_names):
     return node_name, label_name, identifier_name
 
 def map_output_names(file_args, output_names):
+    """ Maps input file column name to output name. Returns dictionary with 
+    Input:
+        file_args (list) - list of arguments user provided for input file
+        output_names (list) - list of output names to use for node, label, and identifier
+    Output:
+        mapNameDic (dict) - key: input column name (str) / value: output column name (str)
+    """
     mapNameDic = {}
     input_names = file_args[1:]
     if input_names[1] != '':
@@ -555,9 +572,12 @@ def draw_networkx(args,output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray):
     return G,weighted_edges,labels,clusters
 
 def get_topK_edges(k,edgeweight):
-    """
-    Input: k=number of edges for each node, nodes=nodes to get top K from, edgeweight=list of edgeweights
-    Output: list of top K edges
+    """ Finds top k highest weight edges and returns list of top k edges
+    Input:
+        k (int): number of edges to return
+        edgeweight (list): list of edgeweights where each element is (node1, node2, weight)
+    Output:
+        topK_edges (list) - list of top K edges
     """
     topK = {}
     edgeweight = sorted(edgeweight, key=lambda x: x[2], reverse=True)
