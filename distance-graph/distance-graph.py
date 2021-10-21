@@ -145,24 +145,6 @@ def get_commandCounts(file_args):
         db = pyfsdb.Fsdb(filename)
         node_index = db.get_column_number(node_name)
 
-        # try:
-        #     login_index = db.get_column_number('login_successful')
-
-        #     for row in db:
-        #         login_success = row[login_index]
-
-        #         if login_success == 'False':
-        #             continue
-        #         else:
-        #             node = row[node_index]
-        #             if node[0] != "[":
-        #                 node = str([node])
-                    
-        #             if node not in cmdCount:
-        #                 cmdCount[node] = 1
-        #             else:
-        #                 cmdCount[node] += 1
-        # except:
         for row in db:
             node = row[node_index]
             
@@ -179,6 +161,8 @@ def get_commandCounts(file_args):
     return cmdCount
 
 def get_inputFile_args(inputfile_args):
+    """ Parse each input file arg and return filename, node column name, label column name, and identifier column name
+    """
     filename = inputfile_args[0]
     node_name = inputfile_args[1]
     label_name = inputfile_args[2]
@@ -225,24 +209,10 @@ def get_info(file_args, output_names,cmd2template):
 
     for inputfile_args in file_args:
         filename = inputfile_args[0]
-        # filename, input_node, input_label, input_identifier = get_inputFile_args(inputfile_args)
         map_input2output_names = map_output_names(inputfile_args, output_names)
 
         db = pyfsdb.Fsdb(filename)
 
-        # try:
-        #     login_index = db.get_column_number('login_successful')
-        #     data = db.get_pandas(data_has_comment_chars=True)
-
-        #     if inputfile_args[2] != '':
-        #         data['label'] = inputfile_args[2]
-
-        #     # print(data.head())
-
-        #     data = data[data['login_successful']=='True']
-
-        #     data = data.rename(columns=map_input2output_names)
-        # except:
         login_index = False
 
         data = db.get_pandas(data_has_comment_chars=True)
@@ -335,7 +305,6 @@ def get_cmdIPsDic(file_args,loggedInOnly,id_name,login_index):
 
         id_index = db.get_column_number(input_id_name)
         node_index = db.get_column_number(input_node_name)
-        # label_index = db.get_column_number(input_label_name)
 
         for row in db:
             ident = row[id_index] ## identifier (IP address)
@@ -347,7 +316,6 @@ def get_cmdIPsDic(file_args,loggedInOnly,id_name,login_index):
                 continue
             
             node = row[node_index]
-            # label = row[label_index]
             label = input_label_name
             
             if node[0]!="[":
@@ -389,11 +357,9 @@ def get_labelDic(file_args, login_index):
 
         node_index = db.get_column_number(input_node_name)
         label = input_label_name
-        # label_index = db.get_column_number(input_label_name)
 
         for row in db:
             node = row[node_index]
-            # label = row[label_index]
 
             if (login_index != False) and (row[login_index] == 'False'):
                 continue
@@ -593,7 +559,6 @@ def get_topK_edges(k,edgeweight):
     Input: k=number of edges for each node, nodes=nodes to get top K from, edgeweight=list of edgeweights
     Output: list of top K edges
     """
-    # topK = {cmd:[] for cmd in nodes}
     topK = {}
     edgeweight = sorted(edgeweight, key=lambda x: x[2], reverse=True)
 
@@ -935,8 +900,6 @@ def main():
     output_names = args.output_names
 
     check_fileArgs(file_args, output_names)
-
-    #login_success = args.login_success
 
     if args.templatize:
         cmd2template = get_cmd2template(file_args)
