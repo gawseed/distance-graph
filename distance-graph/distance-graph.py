@@ -17,7 +17,7 @@ _NIX_COMMANDS = None
 def parse_args():
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter,
                             description=__doc__,
-                            epilog='Example Usage: python distance-graph.py -n command -l source -i ip --templatize -e 0.945 -E myedgelist.fsdb -c myclusterlist.fsdb -w 12.5 -H 8.5 -fs 8 -ns 250 "../example/commands.fsdb" distance-graph.png')
+                            epilog='Example Usage: python distance-graph.py -1 ../example/data1.fsdb command data1 ip -2 ../example/data2.fsdb commands data2 ip -3 ../example/data3.fsdb cmd data3 id -on command source ip -e 0.05 -w 10 -H 8 -fs 10 -ns 250 -E edgelist.fsdb -c clusterlist.fsdb distance-graph.png')
 
     parser.add_argument("-1", "--input_file1", type=str, nargs=4,
                         required=True, help="Pass the (required) input filename, (required) node column name (command), node's label column name (source), node's identifier column name (ip). Pass empty string '' for the optional label and identifier columns.")
