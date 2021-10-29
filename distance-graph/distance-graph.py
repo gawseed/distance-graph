@@ -17,7 +17,7 @@ _NIX_COMMANDS = None
 def parse_args():
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter,
                             description=__doc__,
-                            epilog='Example Usage: python distance-graph.py -1 ../example/data1.fsdb command data1 ip -2 ../example/data2.fsdb commands data2 ip -3 ../example/data3.fsdb cmd data3 id -on command source ip -e 0.05 -w 10 -H 8 -fs 10 -ns 250 -E edgelist.fsdb -c clusterlist.fsdb distance-graph.png')
+                            epilog='Example Usage: python distance-graph.py -1 ../example/data1.fsdb command data1 ip -2 ../example/data2.fsdb commands data2 ip -3 ../example/data3.fsdb cmd data3 id -on command source ip --templatize -stop ../example/nix_commands.txt -e 0.05 -w 10 -H 8 -fs 10 -ns 250 -E edgelist.fsdb -c clusterlist.fsdb distance-graph.png')
 
     parser.add_argument("-1", "--input_file1", type=str, nargs=4,
                         required=True, help="Pass [required] input filename, [required] node column name (e.g. command), label name of the data (e.g. data1), node's identifier column name (e.g. ip). Pass empty string '' if do not have label name or identifier column.")
@@ -34,6 +34,9 @@ def parse_args():
     parser.add_argument("--templatize", default=False, action="store_true",
                         help="Set this argument to templatize the nodes")
 
+    parser.add_argument("-stop", "--stopwords", default=None, type=str,
+                        help="Path to text file that contains stopwords separated by a new line")
+    
     parser.add_argument("-e", "--edge-weight", default=.95, type=float,
                         help="The edge weight threshold to use")
 
