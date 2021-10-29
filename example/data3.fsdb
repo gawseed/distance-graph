@@ -1,0 +1,5 @@
+#fsdb -F t id cmd
+2.2.2.2	echo data
+5.5.5.5	echo
+5.5.5.5	pwd
+#   | dbcol id cmd
