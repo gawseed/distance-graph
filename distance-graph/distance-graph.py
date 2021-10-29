@@ -785,12 +785,12 @@ def get_clusters(G):
 
 ## command templatizer code 
 def is_bash_directive(s):
-  """Retruns True if s is bash syntax (e.g., fi), standard command (e.g., wget), or looks like an argument (e.g., -c).
+  """Returns True if s is bash syntax (e.g., fi), standard command (e.g., wget), or looks like an argument (e.g., -c).
   """
   if s.startswith('-'): return True
   global _NIX_COMMANDS
-  if _NIX_COMMANDS is None:
-    _NIX_COMMANDS = set(open('../example/nix_commands.txt').read().split('\n'))
+#   if _NIX_COMMANDS is None:
+#     _NIX_COMMANDS = set(open('../example/nix_commands.txt').read().split('\n'))
   return s in _NIX_COMMANDS
 
 
@@ -925,6 +925,14 @@ def main():
     check_fileArgs(file_args, output_names)
 
     if args.templatize:
+        stopwords = args.stopwords
+        if stopwords == None:
+            raise Exception('Stopwords file is missing. The stopwords file is required for templatization.')
+
+        global _NIX_COMMANDS
+        if _NIX_COMMANDS is None:
+            _NIX_COMMANDS = set(open(stopwords).read().split('\n'))
+
         cmd2template = get_cmd2template(file_args)
     else:
         cmd2template = None
