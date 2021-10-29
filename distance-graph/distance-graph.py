@@ -20,16 +20,16 @@ def parse_args():
                             epilog='Example Usage: python distance-graph.py -1 ../example/data1.fsdb command data1 ip -2 ../example/data2.fsdb commands data2 ip -3 ../example/data3.fsdb cmd data3 id -on command source ip -e 0.05 -w 10 -H 8 -fs 10 -ns 250 -E edgelist.fsdb -c clusterlist.fsdb distance-graph.png')
 
     parser.add_argument("-1", "--input_file1", type=str, nargs=4,
-                        required=True, help="Pass the (required) input filename, (required) node column name (command), node's label column name (source), node's identifier column name (ip). Pass empty string '' for the optional label and identifier columns.")
+                        required=True, help="Pass [required] input filename, [required] node column name (e.g. command), label name of the data (e.g. data1), node's identifier column name (e.g. ip). Pass empty string '' if do not have label name or identifier column.")
 
     parser.add_argument("-2", "--input_file2", type=str, default=None, nargs=4,
-                        help="Pass the second input filename, node column name (command), node's label column name (source), node's identifier column name (ip)")
+                        help="Pass second [required] input filename, [required] node column name (e.g. command), label name of the data (e.g. data2), node's identifier column name (e.g. ip). Pass empty string '' if do not have label name or identifier column.")
 
     parser.add_argument("-3", "--input_file3", type=str, default=None, nargs=4,
-                        help="Pass the third input filename, node column name (command), node's label column name (source), node's identifier column name (ip)")
+                        help="Pass third [required] input filename, [required] node column name (e.g. command), label name of the data (e.g. data3), node's identifier column name (e.g. ip). Pass empty string '' if do not have label name or identifier column.")
 
     parser.add_argument("-on", "--output_names", type=str, nargs=3,
-                        required=True, help="The names to use for output distance graph labels, edge list, and cluster list. Pass the (required) node name (command), label name (source), identifier name (ip). Pass empty string '' for the optional label and identifier names.")
+                        required=True, help="The names to use for output distance graph labels, edge list, and cluster list. Pass the [required] node name (e.g. command), column name for label (e.g. source), identifier name (e.g. ip). Pass empty string '' if input files do not have label name or identifier column.")
 
     parser.add_argument("--templatize", default=False, action="store_true",
                         help="Set this argument to templatize the nodes")
@@ -38,7 +38,7 @@ def parse_args():
                         help="The edge weight threshold to use")
 
     parser.add_argument("-k", "--top-k", default=None, type=int,
-                        help="Top k command nodes to graph")
+                        help="Top k nodes to graph. If this is set, the edge weight threshold will not be used.")
 
     parser.add_argument("-E", "--edge-list", default=None, type=str,
                         help="Output enumerated edge list to here")
