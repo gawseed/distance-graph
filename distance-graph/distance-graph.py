@@ -414,6 +414,22 @@ def get_templates(cmd2template):
 
     return template2cmd
 
+def calc_templateCount(template2cmd,df,node_name):
+    """ Counts how many of the templatized commands were run in the data and returns dict
+    Input:
+        template2cmd (dict) - key: template (tuple) / value: list of commands that match the template (list)
+        df (pandas DataFrame) - DataFrame consisting of commands run in the full data
+        node_name - name of node column
+    Output:
+        templateCounts (dict) - key: template (tuple) / value: number of commands that match template (int)
+    """
+    templateCounts = {}
+    for template,cmds in template2cmd.items():
+        count = df[node_name].isin(cmds).sum()
+        templateCounts[template] = count
+
+    return templateCounts
+
 def get_uniqueCmds(cmds,cmdIPsDic,template2cmd):
     """ Returns list of unique commands, dict that maps command to a dict that has source and IPs that ran command
     Input:
