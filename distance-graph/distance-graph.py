@@ -266,6 +266,13 @@ def get_info(file_args, output_names,cmd2template):
     if cmd2template:
         templates = get_templates(cmd2template)
         unique_cmds,cmdIPsDic = get_uniqueCmds(cmds,cmdIPsDic,templates)
+
+        unique_cmds2 = []
+        for cmd in unique_cmds:
+            if cmd in [cmd for lst in templates.values() for cmd in lst]:
+                unique_cmds2.append(cmd)
+
+        templateCounts = calc_templateCount(templates,df,node_name)
     else:
         unique_cmds = cmds
 
