@@ -583,7 +583,7 @@ def draw_networkx(args,output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray):
 
     if args.top_k:
         k = args.top_k
-        weighted_edges = get_topK_edges(k, edgeweight)
+        weighted_edges = get_topK_edges(k, edgeweight, k_edges=False)
     else:
         weighted_edges = [x for x in edgeweight if x[2] > threshold]
 
