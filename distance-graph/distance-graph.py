@@ -264,7 +264,7 @@ def get_info(file_args, output_names,cmd2template):
         cmdIPsDic = None
 
     if cmd2template:
-        templates = get_templates(cmd2template)
+        templates,cmd2template = get_templates(cmd2template)
         unique_cmds,cmdIPsDic = get_uniqueCmds(cmds,cmdIPsDic,templates)
 
         unique_cmds2 = []
