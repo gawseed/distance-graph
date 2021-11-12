@@ -412,14 +412,17 @@ def get_templates(cmd2template):
         template2cmd (dict) - key: template (tuple) / value: commands that belong to the template (list)
     """
     template2cmd = {}
+    cmd2template2 = {}
+
     for cmd,basename in cmd2template.items():
         template = basename[2]
+        cmd2template2[cmd[2:-2]] = template
         if template not in template2cmd:
             template2cmd[template] = [cmd]
         else:
             template2cmd[template] = template2cmd[template] + [cmd]
 
-    return template2cmd
+    return template2cmd, cmd2template2
 
 def calc_templateCount(template2cmd,df,node_name):
     """ Counts how many of the templatized commands were run in the data and returns dict
