@@ -34,6 +34,9 @@ def parse_args():
     parser.add_argument("--templatize", default=False, action="store_true",
                         help="Set this argument to templatize the nodes")
 
+    parser.add_argument("--template-nodes", default=False, action="store_true",
+                    help="Set this argument to graph template nodes only")
+
     parser.add_argument("-stop", "--stopwords", default=None, type=str,
                         help="Path to text file that contains stopwords separated by a new line")
     
@@ -42,6 +45,9 @@ def parse_args():
 
     parser.add_argument("-k", "--top-k", default=None, type=int,
                         help="Top k nodes to graph. If this is set, the edge weight threshold will not be used.")
+
+    parser.add_argument("--top-k-edges", default=False, action="store_true",
+                    help="Set this argument to graph top k edges for each node")
 
     parser.add_argument("-E", "--edge-list", default=None, type=str,
                         help="Output enumerated edge list to here")
