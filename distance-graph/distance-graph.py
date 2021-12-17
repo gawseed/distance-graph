@@ -591,7 +591,7 @@ def draw_networkx(args,output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray):
 
     if args.top_k:
         k = args.top_k
-        weighted_edges = get_topK_edges(k, edgeweight, k_edges=False)
+        weighted_edges = get_topK_edges(k, edgeweight, k_edges=args.top_k_edges)
     else:
         weighted_edges = [x for x in edgeweight if x[2] > threshold]
 
@@ -619,22 +619,7 @@ def get_topK_edges(k,edgeweight,k_edges=False):
     topK = {}
     edgeweight = sorted(edgeweight, key=lambda x: x[2], reverse=True)
 
-    if k_edges == False:
-        for i in range(len(edgeweight)):
-            edge = edgeweight[i]
-            cmd1,cmd2,weight = edge
-
-            if len(topK) < k:
-                if cmd1 in topK:
-                    topK[cmd1] = topK[cmd1] + [edge]
-                else:
-                    topK[cmd1] = [edge]
-                
-                if cmd2 in topK:
-                    topK[cmd2] = topK[cmd2] + [edge]
-                else:
-                    topK[cmd2] = [edge]
-    else:
+    if k_edges: ## get k edges for each node
         for i in range(len(edgeweight)):
             edge = edgeweight[i]
             cmd1,cmd2,weight = edge
@@ -650,6 +635,21 @@ def get_topK_edges(k,edgeweight,k_edges=False):
                     topK[cmd2] = topK[cmd2] + [edge]
             else:
                 topK[cmd2] = [edge]
+    else: ## get top k nodes
+        for i in range(len(edgeweight)):
+            edge = edgeweight[i]
+            cmd1,cmd2,weight = edge
+
+            if len(topK) < k:
+                if cmd1 in topK:
+                    topK[cmd1] = topK[cmd1] + [edge]
+                else:
+                    topK[cmd1] = [edge]
+                
+                if cmd2 in topK:
+                    topK[cmd2] = topK[cmd2] + [edge]
+                else:
+                    topK[cmd2] = [edge]
                     
     topK_edges = list(set([tups for lst in list(topK.values()) for tups in lst]))
     
