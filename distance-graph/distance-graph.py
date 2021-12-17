@@ -1017,11 +1017,19 @@ def main():
 
     ## create cluster list to FSDB file
     if (args.cluster_list):
-        outh = pyfsdb.Fsdb(out_file=args.cluster_list)
-        outh.out_column_names=['cluster_id','command']
-        for cmd,cluster_id in clusters.items():
-            outh.append([cluster_id,cmd])
-        outh.close()
+        if (args.template_nodes): ## if template nodes are being graphed, produce edge list that includes templates
+            outh = pyfsdb.Fsdb(out_file=args.cluster_list)
+            outh.out_column_names=['cluster_id','command','template']
+            for cmd,cluster_id in clusters.items():
+                template = cmd2template[cmd]
+                outh.append([cluster_id,cmd,template])
+            outh.close()
+        else:
+            outh = pyfsdb.Fsdb(out_file=args.cluster_list)
+            outh.out_column_names=['cluster_id','command']
+            for cmd,cluster_id in clusters.items():
+                outh.append([cluster_id,cmd])
+            outh.close()
 
 if __name__ == "__main__":
     main()
