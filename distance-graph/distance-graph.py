@@ -993,14 +993,27 @@ def main():
 
     ## create edge list to FSDB file
     if (args.edge_list):
-        outh = pyfsdb.Fsdb(out_file=args.edge_list)
-        outh.out_column_names=['cluster_id', 'node1_id', 'node2_id', 'node1', 'node2', 'weight']
-        for cmd1,cmd2,weight in weighted_edges:
-            cluster_id = clusters[cmd1]
-            num1 = labels[cmd1]
-            num2 = labels[cmd2]
-            outh.append([cluster_id,num1,num2,cmd1,cmd2,round(weight,3)])
-        outh.close()
+        if (args.template_nodes): ## if template nodes are being graphed, produce edge list that includes templates
+            print("Graphing template nodes...")
+            outh = pyfsdb.Fsdb(out_file=args.edge_list)
+            outh.out_column_names=['cluster_id', 'weight', 'node1_id', 'node2_id', 'node1', 'node2', 'template1', 'template2']
+            for cmd1,cmd2,weight in weighted_edges:
+                cluster_id = clusters[cmd1]
+                num1 = labels[cmd1]
+                num2 = labels[cmd2]
+                template1 = cmd2template[cmd1]
+                template2 = cmd2template[cmd2]
+                outh.append([cluster_id,round(weight,3),num1,num2,cmd1,cmd2,template1,template2])
+            outh.close()
+        else:
+            outh = pyfsdb.Fsdb(out_file=args.edge_list)
+            outh.out_column_names=['cluster_id', 'node1_id', 'node2_id', 'node1', 'node2', 'weight']
+            for cmd1,cmd2,weight in weighted_edges:
+                cluster_id = clusters[cmd1]
+                num1 = labels[cmd1]
+                num2 = labels[cmd2]
+                outh.append([cluster_id,num1,num2,cmd1,cmd2,round(weight,3)])
+            outh.close()
 
     ## create cluster list to FSDB file
     if (args.cluster_list):
