@@ -215,7 +215,7 @@ def map_output_names(file_args, output_names):
 
     return mapNameDic
 
-def get_info(file_args, output_names,cmd2template):
+def get_info(file_args, output_names,cmd2template, template_nodes):
     """ Return four dictionaries: (1) weights between commands, (2) IPs that ran commands, (3) sources for each command, and (4) command to array style string
     Input:
         input_file (list) - list of FSDB files with IP and command data
@@ -273,12 +273,14 @@ def get_info(file_args, output_names,cmd2template):
         templates,cmd2template = get_templates(cmd2template)
         unique_cmds,cmdIPsDic = get_uniqueCmds(cmds,cmdIPsDic,templates)
 
-        unique_cmds2 = []
-        for cmd in unique_cmds:
-            if cmd in [cmd for lst in templates.values() for cmd in lst]:
-                unique_cmds2.append(cmd)
-
-        templateCounts = calc_templateCount(templates,df,node_name)
+        if template_nodes:
+            unique_cmds2 = []
+            for cmd in unique_cmds:
+                if cmd in [cmd for lst in templates.values() for cmd in lst]:
+                    unique_cmds2.append(cmd)
+            
+            templateCounts = calc_templateCount(templates,df,node_name)
+            unique_cmds = unique_cmds2
     else:
         unique_cmds = cmds
 
@@ -293,7 +295,7 @@ def get_info(file_args, output_names,cmd2template):
     else:
         sourceDic = {cmd:"+".join(labelDic[cmdToArray[cmd]])+"_"+node_name for cmd in unique_cmds}
 
-    return weightDic,cmdIPsDic,sourceDic,cmdToArray
+    return weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2template
 
 def get_loggedInOnly(df,node_name,label,id_name):
     """ Returns list of IP addresses that only logged in and did not run any commands 
