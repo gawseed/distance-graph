@@ -53,11 +53,23 @@ def parse_args():
     parser.add_argument("--top-k-edges", default=False, action="store_true",
                     help="Set this argument to graph top k edges for each node")
 
+    parser.add_argument("-p", "--position", default=None, type=str,
+                        help="Path to pickle file that contains NetworkX graph positional dictionary")
+
+    parser.add_argument("-l", "--labels", default=None, type=str,
+                        help="Path to pickle file that contains dictionary of node labels")
+
     parser.add_argument("-E", "--edge-list", default=None, type=str,
                         help="Output enumerated edge list to here")
 
     parser.add_argument("-c", "--cluster-list", default=None, type=str,
                         help="Output enumerated cluster list to here")
+
+    parser.add_argument("-pf", "--position-file", default=None, type=str,
+                        help="Output pickle file that contains generated NetworkX graph positional dictionary to here")
+
+    parser.add_argument("-lf", "--labels-file", default=None, type=str,
+                        help="Output pickle file that contains dictionary of node labels to here")
 
     parser.add_argument("-w", "--width", default=12, type=float,
                         help="The width of the plot in inches")
