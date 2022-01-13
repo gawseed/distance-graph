@@ -1093,8 +1093,13 @@ def main():
     else:
         cmd2template = None
 
-    weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2template = get_info(file_args, output_names, cmd2template, args.template_nodes)
-    G,weighted_edges,labels,clusters = draw_networkx(args,output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray)
+    ## save NetworkX graph position file to pickle file
+    if (args.position_file):
+        pickle.dump(pos, open(args.position_file, "wb" ))
+
+    ## save labels dict to pickle file
+    if (args.labels_file):
+        pickle.dump(labels, open(args.labels_file, "wb" ))
 
     ## create edge list to FSDB file
     if (args.edge_list):
