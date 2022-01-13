@@ -339,7 +339,7 @@ def get_loggedInOnly(df,node_name,label,id_name):
 
     return loggedInOnly
 
-def get_cmdIPsDic(file_args,loggedInOnly,id_name,login_index):
+def get_cmdIPsDic(file_args,loggedInOnly,id_name,login_index,temporal):
     """ Returns dict that contains IP addresses that ran the command and from what source
     Input:
         input_file (str) - FSDB input file
