@@ -833,9 +833,13 @@ def get_numberNodes(G):
     Output:
         labels (dict) - maps node to labeled number
     """
-    nodes = G.nodes()
-    labels = {}
-
+    if not pos:
+        pos=nx.spring_layout(G)
+    else:
+        pos=pickle.load(open(pos,"rb"))
+        fixed_nodes = pos.keys()
+        pos=nx.spring_layout(G,pos=pos,fixed=fixed_nodes)
+        
     i=0
     for node in nodes:
         labels[node] = i
