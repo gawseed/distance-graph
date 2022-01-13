@@ -628,7 +628,13 @@ def draw_networkx(args,output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray):
 
     G = nx.Graph()
     G.add_weighted_edges_from(weighted_edges)
-    labels = get_numberNodes(G)
+
+    if (args.labels):
+        labels = pickle.load(open(args.labels,"rb"))
+        labels = add_newLabels(G,labels)
+    else:
+        labels = get_numberNodes(G)
+
     clusters = get_clusters(G)
 
     if cmdIPsDic:
