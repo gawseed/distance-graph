@@ -614,6 +614,7 @@ def draw_networkx(args,output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray):
         clusters (dict) - key: command node (str) / value: cluster ID (int)
     """
     threshold = args.edge_weight
+    pos = args.position
     output_file = args.output_file[0]
     figsize = tuple([args.width,args.height])
     node_name, label_name, id_name = get_outputNames(output_names)
@@ -639,11 +640,16 @@ def draw_networkx(args,output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray):
 
     if cmdIPsDic:
         add_IPnodes(G,cmdToArray,cmdIPsDic)
-    
-    nodeTypeDic,colorslist = set_nodeColors(G,sourceDic,id_name)
-    plot_networkx(G,output_file,labels,colorslist,nodeTypeDic,id_name,figsize=figsize,font_size=args.font_size,node_size=args.node_size)
 
-    return G,weighted_edges,labels,clusters
+    # if (args.temporal):
+    #     nodeTypeDic,colorslist = set_nodeColors(G,sourceDic,id_name)
+    #     pos = plot_networkx(G,output_file,labels,colorslist,nodeTypeDic,id_name,figsize=figsize,font_size=args.font_size,node_size=args.node_size)
+        # pos = plot_temporal_networkx()
+    # else:
+    nodeTypeDic,colorslist = set_nodeColors(G,sourceDic,id_name)
+    pos = plot_networkx(G,pos,output_file,labels,colorslist,nodeTypeDic,id_name,figsize=figsize,font_size=args.font_size,node_size=args.node_size)
+
+    return G,weighted_edges,labels,clusters,pos
 
 def get_topK_edges(k,edgeweight,k_edges=False):
     """ Finds top k highest weight edges and returns list of top k edges
