@@ -378,6 +378,8 @@ def get_cmdIPsDic(file_args,loggedInOnly,id_name,login_index,temporal):
             if temporal:
                 if (file_num == num_files) and (node not in seenNodes):
                     label = "new_"+label
+                else:
+                    seenNodes.append(node)
             
             if node[0]!="[":
                 node = str([node])
