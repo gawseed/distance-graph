@@ -353,6 +353,10 @@ def get_cmdIPsDic(file_args,loggedInOnly,id_name,login_index,temporal):
     cmdIPsDic = {}
     labelIPDic = {}
 
+    seenNodes = []
+
+    num_files = len(file_args)
+    file_num = 1
     for inputfile_args in file_args:
         filename, input_node_name, input_label_name, input_id_name = get_inputFile_args(inputfile_args)
         db = pyfsdb.Fsdb(filename)
@@ -371,6 +375,9 @@ def get_cmdIPsDic(file_args,loggedInOnly,id_name,login_index,temporal):
             
             node = row[node_index]
             label = input_label_name
+            if temporal:
+                if (file_num == num_files) and (node not in seenNodes):
+                    label = "new_"+label
             
             if node[0]!="[":
                 node = str([node])
@@ -389,6 +396,7 @@ def get_cmdIPsDic(file_args,loggedInOnly,id_name,login_index,temporal):
                 labelIPDic[ident] = labelIPDic[ident] + [label]
 
         db.close()
+        file_num += 1
 
     sourceDic = {ip:"+".join(labelIPDic[ip])+"_"+id_name for ip in labelIPDic.keys()}
 
