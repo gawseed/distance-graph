@@ -825,14 +825,18 @@ def get_nodeTypeDic(types,nodes,sourceDic,id_name):
             
     return nodeTypeDic
 
-def get_numberNodes(G):
-    """ Returns dict that has nodes mapped to a unique integer label
+def plot_networkx(G,pos,output_file,labels,colorslist,nodeTypeDic,id_name,figsize=(12,8),font_size=10,node_size=350,ip_alpha=0.2,cmd_alpha=0.2,edge_alpha=0.2):
+    """ Plots NetworkX graph and saves image to output file
     Input:
-        G (NetworkX graph) - graph with IP and command nodes
-        sourceDic (dict) - maps command nodes to source label
-    Output:
-        labels (dict) - maps node to labeled number
-    """
+        G (NetworkX graph) - graph with IP and command nodes to graph
+        output_file (str) - filename for network graph image
+        labels (dict) - maps node to integer label
+        colorslist (list) - list of node colors
+        nodeTypeDic (dict) - maps node type to list of nodes
+        id_name (str) - column name of identifier column (eg. "ip")
+    """  
+    fig,ax = plt.subplots(1,figsize=figsize)
+
     if not pos:
         pos=nx.spring_layout(G)
     else:
@@ -841,11 +845,33 @@ def get_numberNodes(G):
         pos=nx.spring_layout(G,pos=pos,fixed=fixed_nodes)
         
     i=0
-    for node in nodes:
-        labels[node] = i
-        i += 1
+    for nodetype in nodeTypeDic:
+        nodelist = nodeTypeDic[nodetype]
+        color = colorslist[i]
+        i+=1
+
+        if id_name and id_name in nodetype:
+            alpha=ip_alpha
+            nx.draw_networkx_nodes(G,pos=pos,nodelist=nodelist,ax=ax,\
+                        label=nodetype,alpha=alpha,node_size=node_size,node_shape="^",node_color=color)
+        else:
+            alpha=cmd_alpha
+            nx.draw_networkx_nodes(G,pos=pos,nodelist=nodelist,ax=ax,\
+                        label=nodetype,alpha=alpha,node_size=node_size,node_color=color)
+
+    nx.draw_networkx_edges(G,pos=pos,alpha=edge_alpha)
+    nx.draw_networkx_labels(G,pos=pos,labels=labels,font_size=font_size)
+    ax.legend(scatterpoints=1, markerscale=0.75)
+
+    ## remove black border
+    ax.spines['top'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_visible(False)
     
-    return labels
+    plt.savefig(output_file, dpi=300)
+
+    return pos
 
 def plot_networkx(G,output_file,labels,colorslist,nodeTypeDic,id_name,figsize=(12,8),font_size=10,node_size=350,ip_alpha=0.2,cmd_alpha=0.2,edge_alpha=0.2):
     """ Plots NetworkX graph and saves image to output file
