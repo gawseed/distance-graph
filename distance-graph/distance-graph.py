@@ -873,7 +873,7 @@ def plot_networkx(G,pos,output_file,labels,colorslist,nodeTypeDic,id_name,figsiz
 
     return pos
 
-def plot_networkx(G,output_file,labels,colorslist,nodeTypeDic,id_name,figsize=(12,8),font_size=10,node_size=350,ip_alpha=0.2,cmd_alpha=0.2,edge_alpha=0.2):
+def plot_temporal_networkx(G,pos,output_file,labels,colorslist,nodeTypeDic,id_name,figsize=(12,8),font_size=10,node_size=350,ip_alpha=0.2,cmd_alpha=0.2,edge_alpha=0.2):
     """ Plots NetworkX graph and saves image to output file
     Input:
         G (NetworkX graph) - graph with IP and command nodes to graph
@@ -912,6 +912,8 @@ def plot_networkx(G,output_file,labels,colorslist,nodeTypeDic,id_name,figsize=(1
     ax.spines['left'].set_visible(False)
     
     plt.savefig(output_file, dpi=300)
+
+    return pos
 
 def get_clusters(G):
     """ Finds clusters of commands in NetworkX graph. A cluster is considered to be nodes that are connected by an edge
