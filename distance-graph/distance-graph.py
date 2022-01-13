@@ -375,6 +375,8 @@ def get_cmdIPsDic(file_args,loggedInOnly,id_name,login_index,temporal):
             
             node = row[node_index]
             label = input_label_name
+            ident_label = label
+
             if temporal:
                 if (file_num == num_files) and (node not in seenNodes):
                     label = "new_"+label
@@ -393,9 +395,9 @@ def get_cmdIPsDic(file_args,loggedInOnly,id_name,login_index,temporal):
                     cmdIPsDic[node][label] = [ident]
 
             if ident not in labelIPDic:
-                labelIPDic[ident] = [label]
-            elif ident in labelIPDic and label not in labelIPDic[ident]:
-                labelIPDic[ident] = labelIPDic[ident] + [label]
+                labelIPDic[ident] = [ident_label]
+            elif ident in labelIPDic and ident_label not in labelIPDic[ident]:
+                labelIPDic[ident] = labelIPDic[ident] + [ident_label]
 
         db.close()
         file_num += 1
