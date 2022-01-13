@@ -698,6 +698,18 @@ def get_topK_edges(k,edgeweight,k_edges=False):
     
     return topK_edges
 
+def add_newLabels(G,labels):
+    nodes = G.nodes()
+    num_labels = labels.values()
+    
+    i=0
+    for node in nodes:
+        if node not in labels:
+            while i in num_labels:
+                i += 1
+            labels[node] = i
+    
+    return labels
 
 def add_IPnodes(G,cmdToArray,cmdIPsDic):
     """  Adds IP edges to command nodes
