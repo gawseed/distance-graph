@@ -10,6 +10,7 @@ import networkx as nx
 import Levenshtein
 import itertools
 import re
+import pickle
 
 TOKENIZE_PATTERN = re.compile('[\s"=;|&><]')
 _NIX_COMMANDS = None
