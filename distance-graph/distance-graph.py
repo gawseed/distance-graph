@@ -711,6 +711,24 @@ def add_newLabels(G,labels):
     
     return labels
 
+def get_numberNodes(G):
+    """ Returns dict that has nodes mapped to a unique integer label
+    Input:
+        G (NetworkX graph) - graph with IP and command nodes
+        sourceDic (dict) - maps command nodes to source label
+    Output:
+        labels (dict) - maps node to labeled number
+    """
+    nodes = G.nodes()
+    labels = {}
+
+    i=0
+    for node in nodes:
+        labels[node] = i
+        i += 1
+    
+    return labels
+
 def add_IPnodes(G,cmdToArray,cmdIPsDic):
     """  Adds IP edges to command nodes
     Input:
