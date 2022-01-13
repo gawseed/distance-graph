@@ -231,7 +231,7 @@ def map_output_names(file_args, output_names):
 
     return mapNameDic
 
-def get_info(file_args, output_names,cmd2template, template_nodes):
+def get_info(file_args, output_names, cmd2template, args):
     """ Return four dictionaries: (1) weights between commands, (2) IPs that ran commands, (3) sources for each command, and (4) command to array style string
     Input:
         input_file (list) - list of FSDB files with IP and command data
@@ -245,6 +245,9 @@ def get_info(file_args, output_names,cmd2template, template_nodes):
         sourceDic (dict) - key: command (str) / value: source label (str)
         cmdToArray (dict) - key: command (str) / value: array style command (str)
     """
+    template_nodes = args.template_nodes
+    temporal = args.temporal
+
     df = pd.DataFrame()
 
     node_name, label_name, id_name = get_outputNames(output_names)
@@ -277,7 +280,7 @@ def get_info(file_args, output_names,cmd2template, template_nodes):
         df2 = df2[df2[node_name]!='[]']
         cmds = list(df2[node_name].unique())
 
-        cmdIPsDic,sourceDic = get_cmdIPsDic(file_args,loggedInOnly,id_name,login_index)
+        cmdIPsDic,sourceDic = get_cmdIPsDic(file_args,loggedInOnly,id_name,login_index, temporal)
     else:
         df2 = df.copy()
         df2 = df2[df2[node_name]!='[]']
