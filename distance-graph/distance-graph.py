@@ -1093,6 +1093,9 @@ def main():
     else:
         cmd2template = None
 
+    weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2template = get_info(file_args, output_names, cmd2template, args)
+    G,weighted_edges,labels,clusters,pos = draw_networkx(args,output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray)
+
     ## save NetworkX graph position file to pickle file
     if (args.position_file):
         pickle.dump(pos, open(args.position_file, "wb" ))
