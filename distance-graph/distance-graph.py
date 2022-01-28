@@ -29,6 +29,9 @@ def parse_args():
     parser.add_argument("-3", "--input_file3", type=str, default=None, nargs=4,
                         help="Pass third [required] input filename, [required] node column name (e.g. command), label name of the data (e.g. data3), node's identifier column name (e.g. ip). Pass empty string '' if do not have label name or identifier column.")
 
+    parser.add_argument("-4", "--input_file4", type=str, default=None, nargs=4,
+                        help="Pass fourth [required] input filename, [required] node column name (e.g. command), label name of the data (e.g. data3), node's identifier column name (e.g. ip). Pass empty string '' if do not have label name or identifier column.")
+
     parser.add_argument("-on", "--output_names", type=str, nargs=3,
                         required=True, help="The names to use for output distance graph labels, edge list, and cluster list. Pass the [required] node name (e.g. command), column name for label (e.g. source), identifier name (e.g. ip). Pass empty string '' if input files do not have label name or identifier column.")
 
