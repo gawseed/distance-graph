@@ -147,7 +147,17 @@ def get_cmd2template(file_args):
     Output:
         cmd2template (dict) - maps templatizable commands to highest degree template
     """
-    cmds = get_commandCounts(file_args)
+    cmds,cmds2 = get_commandCounts(file_args,temporal)
+    cmd2template = templatize_cmds(cmds)
+
+    if temporal:
+        print("Getting second templates")
+        cmd2template2 = templatize_cmds(cmds2)
+    else:
+        cmd2template2 = {}
+
+
+def templatize_cmds(cmds):
     cmd_graph = CommandGraph()
     for cmd in tqdm.tqdm(cmds.keys()):
     #  print("==== CMD IS====\n%s" % cmd) 
