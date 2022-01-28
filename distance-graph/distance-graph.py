@@ -41,8 +41,11 @@ def parse_args():
     parser.add_argument("-stop", "--stopwords", default=None, type=str,
                         help="Path to text file that contains stopwords separated by a new line")
 
-    parser.add_argument("--temporal", default=False, action="store_true",
-                        help="Set this argument to perform temporal analysis of first and second input files")
+    parser.add_argument("--temporal", type=int, default=None, nargs='+',
+                        help="Pass the input file number(s) with 'new' data separated by a space to perform temporal analysis")
+
+    # parser.add_argument("--temporal", default=False, action="store_true",
+    #                     help="Set this argument to perform temporal analysis of first and second input files")
     
     parser.add_argument("-e", "--edge-weight", default=.95, type=float,
                         help="The edge weight threshold to use")
