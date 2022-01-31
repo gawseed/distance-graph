@@ -406,6 +406,7 @@ def get_cmdIPsDic(file_args,loggedInOnly,id_name,login_index,temporal):
     for inputfile_args in file_args:
         filename, input_node_name, input_label_name, input_id_name = get_inputFile_args(inputfile_args)
         db = pyfsdb.Fsdb(filename)
+        seenNodes = list(set(seenNodes))
 
         id_index = db.get_column_number(input_id_name)
         node_index = db.get_column_number(input_node_name)
@@ -424,8 +425,10 @@ def get_cmdIPsDic(file_args,loggedInOnly,id_name,login_index,temporal):
             ident_label = label
 
             if temporal:
-                if (file_num == num_files) and (node not in seenNodes):
+                if (file_num in temporal) and (node not in seenNodes):
                     label = "new_"+label
+                elif node in seenNodes:
+                    continue
                 else:
                     seenNodes.append(node)
             
@@ -452,7 +455,7 @@ def get_cmdIPsDic(file_args,loggedInOnly,id_name,login_index,temporal):
 
     return cmdIPsDic,sourceDic
 
-def get_labelDic(file_args, login_index):
+def get_labelDic(file_args, login_index, temporal):
     """ Returns dict that maps node to list of labels node has
     Input:
         input_file (str) - FSDB input file
@@ -463,18 +466,30 @@ def get_labelDic(file_args, login_index):
     """
     labelDic = {}
 
+    seenNodes = []
+    file_num = 1
+
     for inputfile_args in file_args:
         filename, input_node_name, input_label_name, input_id_name = get_inputFile_args(inputfile_args)
         db = pyfsdb.Fsdb(filename)
+        seenNodes = list(set(seenNodes))
 
         node_index = db.get_column_number(input_node_name)
-        label = input_label_name
 
         for row in db:
             node = row[node_index]
+            label = input_label_name
 
             if (login_index != False) and (row[login_index] == 'False'):
                 continue
+
+            if temporal:
+                if (file_num in temporal) and (node not in seenNodes):
+                    label = "new_"+label
+                elif node in seenNodes:
+                    continue
+                else:
+                    seenNodes.append(node)
             
             if node[0]!="[":
                 node = str([node])
@@ -486,28 +501,35 @@ def get_labelDic(file_args, login_index):
                     labelDic[node].append(label)
         
         db.close()
+        file_num += 1
 
     return labelDic
 
-def get_templates(cmd2template):
+def get_templates(cmd2templates):
     """ Gets list of commands that belong to each template and returns a dictionary
     Input:
         cmd2template (dict) - key: command (str) / value: template (tuple)
     Output:
         template2cmd (dict) - key: template (tuple) / value: commands that belong to the template (list)
     """
-    template2cmd = {}
+    templates = []
     cmd2template2 = {}
 
-    for cmd,basename in cmd2template.items():
-        template = basename[2]
-        cmd2template2[cmd[2:-2]] = template
-        if template not in template2cmd:
-            template2cmd[template] = [cmd]
+    for cmd2template in cmd2templates:
+        template2cmd = {}
+        if cmd2template: ## cmd2template is not None
+            for cmd,basename in cmd2template.items():
+                template = basename[2]
+                cmd2template2[cmd[2:-2]] = template
+                if template not in template2cmd:
+                    template2cmd[template] = [cmd]
+                else:
+                    template2cmd[template] = template2cmd[template] + [cmd]
+            templates.append(template2cmd)
         else:
-            template2cmd[template] = template2cmd[template] + [cmd]
+            templates.append({})
 
-    return template2cmd, cmd2template2
+    return templates,cmd2template2
 
 def calc_templateCount(template2cmd,df,node_name):
     """ Counts how many of the templatized commands were run in the data and returns dict
