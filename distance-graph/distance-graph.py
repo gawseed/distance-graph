@@ -1109,7 +1109,10 @@ def plot_temporal_networkx(G,pos,output_file,labels,colorslist,nodeTypeDic,id_na
             nx.draw_networkx_nodes(G,pos=pos,nodelist=nodelist,ax=ax,\
                         label=nodetype,alpha=alpha,node_size=node_size,node_shape="^",node_color=color)
         else:
-            alpha=cmd_alpha
+            if 'new' in nodetype:
+                alpha=0.4
+            else:
+                alpha=cmd_alpha
             nx.draw_networkx_nodes(G,pos=pos,nodelist=nodelist,ax=ax,\
                         label=nodetype,alpha=alpha,node_size=node_size,node_color=color)
 
