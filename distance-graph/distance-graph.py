@@ -1296,6 +1296,7 @@ def main():
     check_fileArgs(file_args, output_names)
 
     if args.templatize:
+        temporal = args.temporal
         stopwords = args.stopwords
         if stopwords == None:
             raise Exception('Stopwords file is missing. The stopwords file is required for templatization.')
@@ -1304,7 +1305,7 @@ def main():
         if _NIX_COMMANDS is None:
             _NIX_COMMANDS = set(open(stopwords).read().split('\n'))
 
-        cmd2template = get_cmd2template(file_args)
+        cmd2template = get_cmd2template(file_args,temporal)
     else:
         cmd2template = None
 
