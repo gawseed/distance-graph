@@ -1091,7 +1091,13 @@ def plot_temporal_networkx(G,pos,output_file,labels,colorslist,nodeTypeDic,id_na
     """  
     fig,ax = plt.subplots(1,figsize=figsize)
 
-    pos=nx.spring_layout(G)
+    if not pos:
+        pos=nx.spring_layout(G)
+    else:
+        pos=pickle.load(open(pos,"rb"))
+        fixed_nodes = pos.keys()
+        pos=nx.spring_layout(G,pos=pos,fixed=fixed_nodes,k=0.3)
+        
     i=0
     for nodetype in nodeTypeDic:
         nodelist = nodeTypeDic[nodetype]
