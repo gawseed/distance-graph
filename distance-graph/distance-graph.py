@@ -138,7 +138,7 @@ def check_fileArgs(file_args, output_names):
             raise Exception("Identifier column name for input file {} is provided, but not provided in output names.".format(file_num))
 
 
-def get_cmd2template(file_args):
+def get_cmd2template(file_args,temporal):
     """ Given data file with commands, return dict with command templates
     Input:
         input_file (list) - list of FSDB files that contain IP and command data
@@ -156,6 +156,18 @@ def get_cmd2template(file_args):
     else:
         cmd2template2 = {}
 
+    # cmd_graph = CommandGraph()
+    # for cmd in tqdm.tqdm(cmds.keys()):
+    # #  print("==== CMD IS====\n%s" % cmd) 
+    #     cmd_graph.add(CommandNodeEval(cmd))
+
+    # cmd_graph.finalize_degrees()
+    # sorted_by_degree = sorted(cmd_graph.template2degree.items(), key=lambda k: -k[1])
+    # cmd2template = cmd_graph.cmd_to_template()
+
+    # print("Got templates. Done.")
+
+    return [cmd2template,cmd2template2]
 
 def templatize_cmds(cmds):
     cmd_graph = CommandGraph()
