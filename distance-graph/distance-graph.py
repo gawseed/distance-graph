@@ -895,16 +895,23 @@ def get_topK_edges(k,edgeweight,k_edges=False):
 
 def add_newLabels(G,labels):
     nodes = G.nodes()
-    num_labels = labels.values()
+    num_labels = list(labels.values())
+    new_labels = {}
     
-    i=0
+    i=max(num_labels)+1
     for node in nodes:
-        if node not in labels:
-            while i in num_labels:
-                i += 1
-            labels[node] = i
+        if node in num_labels:
+            new_labels[node] = labels[node]
+        else:
+            new_labels[node] = i
+            i+=1
+        # else:
+        #     while i in num_labels:
+        #         i += 1
+        #     labels[node] = i
+        #     num_labels.append(i)
     
-    return labels
+    return new_labels
 
 def get_numberNodes(G):
     """ Returns dict that has nodes mapped to a unique integer label
