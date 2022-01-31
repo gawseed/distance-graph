@@ -1079,7 +1079,7 @@ def plot_networkx(G,pos,output_file,labels,colorslist,nodeTypeDic,id_name,figsiz
 
     return pos
 
-def plot_temporal_networkx(G,pos,output_file,labels,colorslist,nodeTypeDic,id_name,figsize=(12,8),font_size=10,node_size=350,ip_alpha=0.2,cmd_alpha=0.2,edge_alpha=0.2):
+def plot_temporal_networkx(G,pos,output_file,labels,colorslist,nodeTypeDic,id_name,figsize=(12,8),font_size=10,node_size=350,ip_alpha=0.1,cmd_alpha=0.2,edge_alpha=0.1):
     """ Plots NetworkX graph and saves image to output file
     Input:
         G (NetworkX graph) - graph with IP and command nodes to graph
