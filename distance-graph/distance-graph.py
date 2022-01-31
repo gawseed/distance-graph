@@ -660,7 +660,7 @@ def get_uniqueCmds(cmds,cmdIPsDic,labelDic,templates,temporal):
         unique_cmds = list(labelDic.keys())
         print("Finished with labelDic")
         return unique_cmds,labelDic
-    
+
 def find_new_templates(templates):
     templates1 = templates[0].keys()
     templates2 = templates[1].keys()
@@ -678,6 +678,7 @@ def combine_templates(templates):
                 templateDic[template] = templateDic[template] + cmds
     
     return templateDic
+
 def find_labelIPs(cmdIPsDic, cmds):
     labels2ips = {}
 
@@ -836,13 +837,12 @@ def draw_networkx(args,output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray):
     if cmdIPsDic:
         add_IPnodes(G,cmdToArray,cmdIPsDic)
 
-    # if (args.temporal):
-    #     nodeTypeDic,colorslist = set_nodeColors(G,sourceDic,id_name)
-    #     pos = plot_networkx(G,output_file,labels,colorslist,nodeTypeDic,id_name,figsize=figsize,font_size=args.font_size,node_size=args.node_size)
-        # pos = plot_temporal_networkx()
-    # else:
     nodeTypeDic,colorslist = set_nodeColors(G,sourceDic,id_name)
-    pos = plot_networkx(G,pos,output_file,labels,colorslist,nodeTypeDic,id_name,figsize=figsize,font_size=args.font_size,node_size=args.node_size)
+
+    if (args.temporal):
+        pos = plot_temporal_networkx(G,pos,output_file,labels,colorslist,nodeTypeDic,id_name,figsize=figsize,font_size=args.font_size,node_size=args.node_size)
+    else:
+        pos = plot_networkx(G,pos,output_file,labels,colorslist,nodeTypeDic,id_name,figsize=figsize,font_size=args.font_size,node_size=args.node_size)
 
     return G,weighted_edges,labels,clusters,pos
 
