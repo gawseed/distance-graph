@@ -328,7 +328,7 @@ def get_info(file_args, output_names, cmd2template, args):
         df2 = df.copy()
         df2 = df2[df2[node_name]!='[]']
         cmds = list(df2[node_name].unique())
-        labelDic = get_labelDic(file_args,login_index)
+        labelDic = get_labelDic(file_args,login_index,temporal)
         cmdIPsDic = None
 
     if cmd2template:
