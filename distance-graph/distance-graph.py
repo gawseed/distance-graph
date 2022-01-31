@@ -661,7 +661,12 @@ def get_uniqueCmds(cmds,cmdIPsDic,labelDic,templates,temporal):
         print("Finished with labelDic")
         return unique_cmds,labelDic
     
-    return unique_cmds,cmdIPsDic
+def find_new_templates(templates):
+    templates1 = templates[0].keys()
+    templates2 = templates[1].keys()
+    new_templates = [template for template in templates2 if template not in templates1]
+
+    return new_templates
 
 def update_cmdIPsDic(cmdIPsDic,cmdTemplateDic):
     """ Returns updated cmdIPsDic dict so templatized command IPs include all IPs that ran cmd with templatized cmd
