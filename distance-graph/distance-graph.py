@@ -691,6 +691,22 @@ def find_labelIPs(cmdIPsDic, cmds):
                 labels2ips[label] = labels2ips[label] + ipsDic[label]
     
     return labels2ips
+
+def find_labelCmds(cmdIPsDic, cmds, type):
+    labels2cmds = {}
+
+    for cmd in cmds:
+        if type == 'ip':
+            labels = list(cmdIPsDic[cmd].keys())
+        else:
+            labels = cmdIPsDic[cmd]
+        for label in labels:
+            if label not in labels2cmds:
+                labels2cmds[label] = [cmd]
+            else:
+                labels2cmds[label] = labels2cmds[label] + [cmd]
+    
+    return labels2cmds
 def update_cmdIPsDic(cmdIPsDic,cmdTemplateDic):
     """ Returns updated cmdIPsDic dict so templatized command IPs include all IPs that ran cmd with templatized cmd
     Input:
