@@ -668,6 +668,16 @@ def find_new_templates(templates):
 
     return new_templates
 
+def combine_templates(templates):
+    templateDic = {}
+    for template2cmd in templates:
+        for template,cmds in template2cmd.items():
+            if template not in templateDic:
+                templateDic[template] = cmds
+            else:
+                templateDic[template] = templateDic[template] + cmds
+    
+    return templateDic
 def update_cmdIPsDic(cmdIPsDic,cmdTemplateDic):
     """ Returns updated cmdIPsDic dict so templatized command IPs include all IPs that ran cmd with templatized cmd
     Input:
