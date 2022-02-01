@@ -1000,15 +1000,19 @@ def get_colors(types):
     """
     sourceToColor = {}
     colors_to_use = []
-    colorslist = ["b","c","r","y","tab:pink","g","tab:brown","tab:orange","tab:purple"]
+    colorslist = ["b","c","r","tab:orange","y","lime","tab:pink","g","tab:brown","tab:purple"]
 
     for type in types:
         source = type.split('_')[0]
 
         if source not in sourceToColor:
             if 'new' in source: ## make new nodes red color
-                sourceToColor[source] = 'r'
-                colorslist.pop(colorslist.index('r'))
+                if "r" in colorslist:
+                    sourceToColor[source] = 'r'
+                    colorslist.pop(colorslist.index('r'))
+                else:
+                    sourceToColor[source] = 'lime'
+                    colorslist.pop(colorslist.index('lime'))
             else:
                 sourceToColor[source] = colorslist[0]
                 colorslist = colorslist[1:]
