@@ -631,32 +631,42 @@ def get_uniqueCmds(cmds,cmdIPsDic,labelDic,templates,temporal):
     templatized_cmds = [cmd for cmd in templatized_cmds if cmd not in first_cmds]
     unique_cmds = [x for x in unique_cmds if x not in templatized_cmds]
 
-    # for cmd_key in cmdTemplateDic:
-    #     if cmdIPsDic and cmd_key not in cmdIPsDic:
-    #         template_cmds = cmdTemplateDic[cmd_key]
-    #         first_cmd = template_cmds[0]
-    #         template_cmds = template_cmds[1:]
-    #     else:
-    #         for cmd in cmdTemplateDic[cmd_key]:
-    #             if cmdIPsDic and cmd not in cmdIPsDic:
-    #                 cmdTemplateDic[cmd_key].remove(cmd)
+    for cmd_key,cmds in cmdTemplateDic.items():
+        for cmd in cmds:
+            if (cmdIPsDic and cmd not in cmdIPsDic) or (labelDic and cmd not in labelDic):
+                cmdTemplateDic[cmd_key].remove(cmd)
+            # elif labelDic and cmd not in labelDic:
+            #     cmdTemplateDic[cmd_key].remove(cmd)
 
     if cmdIPsDic:
-        for cmd_key in cmdTemplateDic:
-            if cmdIPsDic and cmd_key not in cmdIPsDic:
-                template_cmds = cmdTemplateDic[cmd_key]
-                first_cmd = template_cmds[0]
-                template_cmds = template_cmds[1:]
-            else:
-                for cmd in cmdTemplateDic[cmd_key]:
-                    if cmdIPsDic and cmd not in cmdIPsDic:
-                        cmdTemplateDic[cmd_key].remove(cmd)
+        # for cmd_key in cmdTemplateDic:
+        #     if cmdIPsDic and cmd_key not in cmdIPsDic:
+        #         print(cmd_key)
+        #         template_cmds = cmdTemplateDic[cmd_key]
+        #         first_cmd = template_cmds[0]
+        #         template_cmds = template_cmds[1:]
+        #     else:
+        #         for cmd in cmdTemplateDic[cmd_key]:
+        #             if cmdIPsDic and cmd not in cmdIPsDic:
+        #                 cmdTemplateDic[cmd_key].remove(cmd)
                         
         cmdIPsDic = update_cmdIPsDic(cmdIPsDic,cmdTemplateDic)
         unique_cmds = list(cmdIPsDic.keys())
         print("Finished with cmdIPsDic")
         return unique_cmds,cmdIPsDic
     else:
+        # for cmd_key in cmdTemplateDic:
+        #     if cmd_key not in labelDic:
+        #         print(cmd_key)
+        #         template_cmds = cmdTemplateDic[cmd_key]
+        #         first_cmd = template_cmds[0]
+        #         template_cmds = template_cmds[1:]
+        #     else:
+        #         for cmd in cmdTemplateDic[cmd_key]:
+        #             if cmd not in labelDic:
+        #                 cmdTemplateDic[cmd_key].remove(cmd)
+
+        labelDic = update_labelDic(labelDic, cmdTemplateDic)
         unique_cmds = list(labelDic.keys())
         print("Finished with labelDic")
         return unique_cmds,labelDic
