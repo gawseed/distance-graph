@@ -735,6 +735,24 @@ def update_cmdIPsDic(cmdIPsDic,cmdTemplateDic):
     
     return cmdIPs
 
+def update_labelDic(labelDic, cmdTemplateDic):
+    updated_labelDic = labelDic.copy()
+    template_labelDic = {}
+
+    for cmd in cmdTemplateDic:
+        labels = [labelDic[cmd]] + [labelDic[cmds] for cmds in cmdTemplateDic[cmd]]
+        labels = [label for lst in labels for label in lst]
+        labels = list(set(labels))
+        template_labelDic[cmd] = labels
+
+    for cmd in template_labelDic:
+        updated_labelDic[cmd] = template_labelDic[cmd]
+        for cmds in cmdTemplateDic[cmd]:
+            if cmds in updated_labelDic:
+                del updated_labelDic[cmds]
+        #updated_labelDic[cmd] = template_labelDic[cmd]
+    
+    return updated_labelDic
 
 def get_distances(cmds):
     """ Returns dict that maps every pair of commands with their calculated distance
