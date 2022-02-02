@@ -136,12 +136,12 @@ def check_fileArgs(file_args, output_names):
 
 
 def get_cmd2template(file_args,temporal):
-    """ Given data file with commands, return list of two dict with command templates
+    """ Given data file with commands, return list of command templates dict. If performing temporal analysis, then get templates for period 1 and period 2
     Input:
         file_args (list) - list of input FSDB files
         temporal (None/list) - list of file numbers (period 2) for temporal analysis
     Output:
-        cmd2template (dict) - maps templatizable commands to highest degree template
+        cmd2template (list) - list of two cmd2template dicts. cmd2template - maps templatizable commands to highest degree template
     """
     cmds,cmds2 = get_commandCounts(file_args,temporal)
     cmd2template = templatize_cmds(cmds)
@@ -260,18 +260,20 @@ def map_output_names(file_args, output_names):
     return mapNameDic
 
 def get_info(file_args, output_names, cmd2template, args):
-    """ Return four dictionaries: (1) weights between commands, (2) IPs that ran commands, (3) sources for each command, and (4) command to array style string
+    """ Cleans and transforms input data according to user arguments. Finds weights and labels of nodes.
+        Return four dictionaries: (1) weights between commands, (2) IPs that ran commands, (3) sources for each command,
+        and (4) command to array style string
     Input:
-        input_file (list) - list of FSDB files with IP and command data
-        node_name (str) - column name of node (eg. "command")
-        label_name (str) - column name of label (eg. "source")
-        id_name (str) - column name of identifier column (eg. "ip")
+        file_args (list) - list of file argument lists with format [filename, node name, label name, identifier name]
+        output_names (list) - list of output names to use for node, label, and identifier
         cmd2template (dict) - maps templatizable commands to highest degree template
+        args (class) - ArgumentParser class with input arguments
     Output:
         weightDic (dict) - key: pair of commands (tuple) / value: weight (float)
         cmdIPsDic (dict) - key: command (str) / value: dictionary with key: source (str) & value: IPs that ran command (list)
         sourceDic (dict) - key: command (str) / value: source label (str)
         cmdToArray (dict) - key: command (str) / value: array style command (str)
+        cmd2template (dict) - key: command (str) / value: template (tuple)
     """
     template_nodes = args.template_nodes
     temporal = args.temporal
@@ -352,7 +354,7 @@ def get_loggedInOnly(df,node_name,label,id_name):
     Input:
         df (Pandas DataFrame) - dataframe with info on IPs, commands
         node_name (str) - column name of node (eg. "command")
-        label_name (str) - column name of label (eg. "source")
+        label (str) - column name of label (eg. "source")
         id_name (str) - column name of identifier column (eg. "ip")
     Output:
         loggedInOnly (list) - IPs that only logged in
@@ -373,11 +375,11 @@ def get_loggedInOnly(df,node_name,label,id_name):
 def get_cmdIPsDic(file_args,loggedInOnly,id_name,login_index,temporal):
     """ Returns dict that contains IP addresses that ran the command and from what source
     Input:
-        input_file (str) - FSDB input file
+        file_args (list) - list of file argument lists with format [filename, node name, label name, identifier name]
         loggedInOnly (list) - list of IPs that only logged in
-        node_name (str) - column name of node (eg. "command")
-        label_name (str) - column name of label (eg. "source")
         id_name (str) - column name of identifier column (eg. "ip")
+        login_index (False/int) - index of login successful
+        temporal (None/list) - list of file numbers (period 2) for temporal analysis
     Output:
         cmdIPsDic (dict) - key: command (str) / value: dictionary with key: source (str) & value: IPs that ran command (list)
     """
@@ -386,7 +388,6 @@ def get_cmdIPsDic(file_args,loggedInOnly,id_name,login_index,temporal):
 
     seenNodes = []
 
-    num_files = len(file_args)
     file_num = 1
     for inputfile_args in file_args:
         filename, input_node_name, input_label_name, input_id_name = get_inputFile_args(inputfile_args)
@@ -402,6 +403,7 @@ def get_cmdIPsDic(file_args,loggedInOnly,id_name,login_index,temporal):
             if ident in loggedInOnly: ## if IP only logged in, do not record
                 continue
 
+            ## check if login_index is provided. Skip over data where login_successful is false
             if (login_index != False) and (row[login_index] == 'False'):
                 continue
             
@@ -409,10 +411,10 @@ def get_cmdIPsDic(file_args,loggedInOnly,id_name,login_index,temporal):
             label = input_label_name
             ident_label = label
 
-            if temporal:
-                if (file_num in temporal) and (node not in seenNodes):
+            if temporal: ## if doing temporal analysis
+                if (file_num in temporal) and (node not in seenNodes): ## if looking at period 2 input file and node not seen
                     label = "new_"+label
-                elif node in seenNodes:
+                elif node in seenNodes: ## if node has been seen, continue
                     continue
                 else:
                     seenNodes.append(node)
@@ -446,6 +448,7 @@ def get_labelDic(file_args, login_index, temporal):
         input_file (str) - FSDB input file
         node_name (str): column name of node (eg. "command")
         label_name (str): column name of label (eg. "source")
+        temporal (None/list) - list of file numbers (period 2) for temporal analysis
     Output:
         labelDic (dict) - key: node (str) / value: list of labels
     """
@@ -537,7 +540,9 @@ def get_uniqueCmds(cmds,cmdIPsDic,labelDic,templates,temporal):
     Input:
         cmds (list) - list of commands,
         cmdIPsDic (dict) - dict that maps command to a dictionary that has source and IPs that ran the command
+        templates (list) - list of template2cmd dicts
         template2cmd (dict) - key: template (tuple) / value: commands that belong to the template (list)
+        temporal (None/list) - list of file numbers (period 2) for temporal analysis
     Output:
         unique_cmds (list) - list of unique commands
         cmdIPsDic (dict) - maps command to a dict that has source and IPs that ran the command
@@ -633,6 +638,9 @@ def get_uniqueCmds(cmds,cmdIPsDic,labelDic,templates,temporal):
         return unique_cmds,labelDic
 
 def find_new_templates(templates):
+    """
+    
+    """
     templates1 = templates[0].keys()
     templates2 = templates[1].keys()
     new_templates = [template for template in templates2 if template not in templates1]
