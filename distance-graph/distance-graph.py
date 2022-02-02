@@ -47,9 +47,6 @@ def parse_args():
     parser.add_argument("--temporal", type=int, default=None, nargs='+',
                         help="Pass the input file number(s) with 'new' data separated by a space to perform temporal analysis")
 
-    # parser.add_argument("--temporal", default=False, action="store_true",
-    #                     help="Set this argument to perform temporal analysis of first and second input files")
-    
     parser.add_argument("-e", "--edge-weight", default=.95, type=float,
                         help="The edge weight threshold to use")
 
@@ -139,11 +136,10 @@ def check_fileArgs(file_args, output_names):
 
 
 def get_cmd2template(file_args,temporal):
-    """ Given data file with commands, return dict with command templates
+    """ Given data file with commands, return list of two dict with command templates
     Input:
-        input_file (list) - list of FSDB files that contain IP and command data
-        node_name (str) - column name of node
-        label_name (str) - column name of label
+        file_args (list) - list of input FSDB files
+        temporal (None/list) - list of file numbers (period 2) for temporal analysis
     Output:
         cmd2template (dict) - maps templatizable commands to highest degree template
     """
@@ -155,17 +151,6 @@ def get_cmd2template(file_args,temporal):
         cmd2template2 = templatize_cmds(cmds2)
     else:
         cmd2template2 = {}
-
-    # cmd_graph = CommandGraph()
-    # for cmd in tqdm.tqdm(cmds.keys()):
-    # #  print("==== CMD IS====\n%s" % cmd) 
-    #     cmd_graph.add(CommandNodeEval(cmd))
-
-    # cmd_graph.finalize_degrees()
-    # sorted_by_degree = sorted(cmd_graph.template2degree.items(), key=lambda k: -k[1])
-    # cmd2template = cmd_graph.cmd_to_template()
-
-    # print("Got templates. Done.")
 
     return [cmd2template,cmd2template2]
 
