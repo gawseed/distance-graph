@@ -1298,7 +1298,7 @@ def main():
     args = parse_args()
 
     ## get list of file args and remove None input files args that were not specified
-    file_args = list(filter(None,[args.input_file1, args.input_file2, args.input_file3]))
+    file_args = list(filter(None,[args.input_file1, args.input_file2, args.input_file3, args.input_file4]))
     output_names = args.output_names
 
     check_fileArgs(file_args, output_names)
