@@ -147,7 +147,7 @@ def get_cmd2template(file_args,temporal):
     cmd2template = templatize_cmds(cmds)
 
     if temporal:
-        print("Getting second templates")
+        print("Finding period 2 templates")
         cmd2template2 = templatize_cmds(cmds2)
     else:
         cmd2template2 = {}
@@ -629,12 +629,12 @@ def get_uniqueCmds(cmds,cmdIPsDic,labelDic,templates,temporal):
     if cmdIPsDic:       
         cmdIPsDic = update_cmdIPsDic(cmdIPsDic,cmdTemplateDic)
         unique_cmds = list(cmdIPsDic.keys())
-        print("Finished with cmdIPsDic")
+        # print("Finished with cmdIPsDic")
         return unique_cmds,cmdIPsDic
     else:
         labelDic = update_labelDic(labelDic, cmdTemplateDic)
         unique_cmds = list(labelDic.keys())
-        print("Finished with labelDic")
+        # print("Finished with labelDic")
         return unique_cmds,labelDic
 
 def find_new_templates(templates):
