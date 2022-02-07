@@ -897,7 +897,7 @@ def add_newLabels(G,labels):
     
     i=max(num_labels)+1
     for node in nodes:
-        if node in num_labels:
+        if node in labels:
             new_labels[node] = labels[node]
         else:
             new_labels[node] = i
