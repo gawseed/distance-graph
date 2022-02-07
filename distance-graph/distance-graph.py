@@ -331,7 +331,7 @@ def get_info(file_args, output_names, cmd2template, args):
                 if (cmd in [cmd for lst in templates[0].values() for cmd in lst]) or (cmd in [cmd for lst in templates[1].values() for cmd in lst]):
                     unique_cmds2.append(cmd)
             
-            templateCounts = calc_templateCount(templates,df,node_name)
+            # templateCounts = calc_templateCount(templates,df,node_name)
             unique_cmds = unique_cmds2
     else:
         unique_cmds = cmds
