@@ -631,12 +631,12 @@ def get_uniqueCmds(cmds,cmdIPsDic,labelDic,templates,temporal):
         cmdIPsDic = update_cmdIPsDic(cmdIPsDic,cmdTemplateDic)
         unique_cmds = list(cmdIPsDic.keys())
         # print("Finished with cmdIPsDic")
-        return unique_cmds,cmdIPsDic
+        return unique_cmds,cmdIPsDic,template2cmd
     else:
         labelDic = update_labelDic(labelDic, cmdTemplateDic)
         unique_cmds = list(labelDic.keys())
         # print("Finished with labelDic")
-        return unique_cmds,labelDic
+        return unique_cmds,labelDic,template2cmd
 
 def find_new_templates(templates):
     """
