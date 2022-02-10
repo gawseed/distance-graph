@@ -656,6 +656,8 @@ def combine_templates(templates):
                 templateDic[template] = cmds
             else:
                 templateDic[template] = templateDic[template] + cmds
+
+    templateDic = {template:sorted(set(cmds)) for template,cmds in templateDic.items()}
     
     return templateDic
 
