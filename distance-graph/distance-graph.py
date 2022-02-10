@@ -795,7 +795,7 @@ def get_weights(distDic):
 
     return weightDic
 
-def draw_networkx(args,output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray):
+def draw_networkx(args,output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2templates,templates):
     """ Finds the weighted edges and plots the NetworkX graph. Obtains labels for nodes and cluster IDs for connected nodes
     Input:
         args (argument parser) - parser of command line arguments,
@@ -828,7 +828,7 @@ def draw_networkx(args,output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray):
 
     if (args.labels):
         labels = pickle.load(open(args.labels,"rb"))
-        labels = add_newLabels(G,labels)
+        labels = add_newLabels(G,labels,cmd2templates,templates)
     else:
         labels = get_numberNodes(G)
 
