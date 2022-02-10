@@ -277,6 +277,7 @@ def get_info(file_args, output_names, cmd2template, args):
     """
     template_nodes = args.template_nodes
     temporal = args.temporal
+    templates = {}
 
     df = pd.DataFrame()
 
@@ -347,7 +348,7 @@ def get_info(file_args, output_names, cmd2template, args):
     else:
         sourceDic = {cmd:"+".join(labelDic[cmdToArray[cmd]])+"_"+node_name for cmd in unique_cmds}
 
-    return weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2template
+    return weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2template,templates
 
 def get_loggedInOnly(df,node_name,label,id_name):
     """ Returns list of IP addresses that only logged in and did not run any commands 
