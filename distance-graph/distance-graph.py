@@ -893,15 +893,34 @@ def get_topK_edges(k,edgeweight,k_edges=False):
     
     return topK_edges
 
-def add_newLabels(G,labels):
+def add_newLabels(G,labels,cmd2templates,templates):
     nodes = G.nodes()
     num_labels = list(labels.values())
     new_labels = {}
+
+    if templates != {}:
+        templatized_cmds = [cmd[2:-2] for lst in templates.values() for cmd in lst]
+    else:
+        templatized_cmds = []
     
     i=max(num_labels)+1
     for node in nodes:
         if node in labels:
             new_labels[node] = labels[node]
+        elif node in templatized_cmds:
+            template = cmd2templates[node]
+            temp_cmds = templates[template]
+
+            cmd_in_prev_labels = False
+            for arrayCmd in temp_cmds:
+                cmd = arrayCmd[2:-2]
+                if cmd in labels:
+                    new_labels[node] = labels[cmd]
+                    cmd_in_prev_labels = True
+                    break
+            if cmd_in_prev_labels == False:
+                new_labels[node] = i
+                i+=1
         else:
             new_labels[node] = i
             i+=1
