@@ -335,6 +335,15 @@ def get_info(file_args, output_names, cmd2template, args):
             
             # templateCounts = calc_templateCount(templates,df,node_name)
             unique_cmds = unique_cmds2
+            if args.labels:
+                labels = pickle.load(open(args.labels,"rb"))
+                unique_cmds,cmd_to_old_label = update_representativeCmd(unique_cmds,labels,cmd2template,templates)
+                cmdToArray = {cmd[2:-2]:cmd for cmd in unique_cmds}
+                unique_cmds = [cmd[2:-2] for cmd in unique_cmds]
+                if cmdIPsDic:
+                    cmdIPsDic = remap_dic(cmdIPsDic,cmd_to_old_label)
+                elif labelDic:
+                    labelDic = remap_dic(labelDic,cmd_to_old_label)
     else:
         unique_cmds = cmds
 
