@@ -359,7 +359,8 @@ def get_info(file_args, output_names, cmd2template, args):
     else:
         sourceDic = {cmd:"+".join(labelDic[cmdToArray[cmd]])+"_"+node_name for cmd in unique_cmds}
 
-    return weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2template,templates
+    return weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2template,templates,cmd2templateCount
+
 
 def get_loggedInOnly(df,node_name,label,id_name):
     """ Returns list of IP addresses that only logged in and did not run any commands 
