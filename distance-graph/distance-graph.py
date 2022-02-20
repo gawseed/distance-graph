@@ -784,6 +784,39 @@ def update_labelDic(labelDic, cmdTemplateDic):
     
     return updated_labelDic
 
+def update_representativeCmd(unique_cmds,labels,cmd2templates,templates):
+    labeled_cmds = labels.keys()
+    unique_cmds2 = [cmd[2:-2] for cmd in unique_cmds]
+    # templatized_cmds = [cmd[2:-2] for lst in templates.values() for cmd in lst]
+    change_cmds = {}
+
+    i = 0
+    for cmd in unique_cmds2:
+        print(i)
+        template = cmd2templates[cmd]
+        temp_cmds = [temp_cmd[2:-2] for temp_cmd in templates[template]]
+
+        for labeled_cmd in labeled_cmds:
+            if labeled_cmd in temp_cmds and cmd != labeled_cmd:
+                change_cmds[cmd] = labeled_cmd
+                # unique_cmds.append(labeled_cmd)
+                # remove_cmds.append(cmd)
+                break
+        
+        i += 1
+        # for arrayCmd in temp_cmds:
+        #     temp_cmd = arrayCmd[2:-2]
+        #     if temp_cmd in labels:
+        #         print(temp_cmd)
+        #         unique_cmds.append(temp_cmd)
+        #         remove_cmds.append(cmd)
+        #         break
+            
+    unique_cmds = [str([change_cmds[cmd]]) if str([cmd]) in change_cmds else cmd for cmd in unique_cmds]
+    # unique_cmds = [str([cmd]) for cmd in unique_cmds]
+    
+    return unique_cmds, change_cmds
+
 def get_distances(cmds):
     """ Returns dict that maps every pair of commands with their calculated distance
     Input:
