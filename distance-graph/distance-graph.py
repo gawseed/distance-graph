@@ -11,6 +11,7 @@ import Levenshtein
 import itertools
 import re
 import pickle
+import math
 
 TOKENIZE_PATTERN = re.compile('[\s"=;|&><]')
 _NIX_COMMANDS = None
@@ -535,6 +536,12 @@ def calc_templateCount(template2cmd,df,node_name):
         templateCounts[template] = count
 
     return templateCounts
+
+def map_cmd2templateCount(cmd2template,templateCounts,unique_cmds):
+    unique_cmds = [cmd[2:-2] for cmd in unique_cmds]
+    #cmd2templateCount = {cmd:templateCounts[cmd2template[cmd]] for cmd in unique_cmds}
+    cmd2templateCount = {cmd:int(math.sqrt(5*templateCounts[cmd2template[cmd]])) for cmd in unique_cmds}
+    return cmd2templateCount
 
 def get_uniqueCmds(cmds,cmdIPsDic,labelDic,templates,temporal):
     """ Returns list of unique commands, dict that maps command to a dict that has source and IPs that ran command
