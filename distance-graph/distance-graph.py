@@ -323,9 +323,9 @@ def get_info(file_args, output_names, cmd2template, args):
     if cmd2template:
         templates,cmd2template = get_templates(cmd2template)
         if cmdIPsDic:
-            unique_cmds,cmdIPsDic = get_uniqueCmds(cmds,cmdIPsDic,{},templates,temporal)
+            unique_cmds,cmdIPsDic,templates = get_uniqueCmds(cmds,cmdIPsDic,{},templates,temporal)
         else:
-            unique_cmds,labelDic = get_uniqueCmds(cmds,cmdIPsDic,labelDic,templates,temporal)
+            unique_cmds,labelDic,templates = get_uniqueCmds(cmds,cmdIPsDic,labelDic,templates,temporal)
 
         if template_nodes:
             unique_cmds2 = []
