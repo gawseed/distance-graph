@@ -348,9 +348,8 @@ def get_info(file_args, output_names, cmd2template, args):
                     labelDic = remap_dic(labelDic,cmd_to_old_label)
     else:
         unique_cmds = cmds
-
-    cmdToArray = {cmd[2:-2]:cmd for cmd in unique_cmds}
-    unique_cmds = [cmd[2:-2] for cmd in unique_cmds]
+        cmdToArray = {cmd[2:-2]:cmd for cmd in unique_cmds}
+        unique_cmds = [cmd[2:-2] for cmd in unique_cmds]
 
     distDic = get_distances(unique_cmds)
     weightDic = get_weights(distDic)
