@@ -664,8 +664,11 @@ def get_uniqueCmds(cmds,cmdIPsDic,labelDic,templates,temporal):
         return unique_cmds,labelDic,template2cmd
 
 def find_new_templates(templates):
-    """
-    
+    """ Compares templates from period 1 to period 2 and returns list of templates from period 2 not found in period 1
+    Input:
+        templates (list) - list containing two cmd2template dictionaries from period 1 and period 2
+    Output:
+        new_templates (list) - list of new templates
     """
     templates1 = templates[0].keys()
     templates2 = templates[1].keys()
@@ -674,6 +677,12 @@ def find_new_templates(templates):
     return new_templates
 
 def combine_templates(templates):
+    """ Combines list of template2cmd dicts into one dictionary
+    Input:
+        templates (list) - list containing two cmd2template dictionaries from period 1 and period 2
+    Output:
+        templateDic (dict) - key: template (tuple) / value: commands that templatize to the template (list)
+    """
     templateDic = {}
     for template2cmd in templates:
         for template,cmds in template2cmd.items():
