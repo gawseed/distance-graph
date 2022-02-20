@@ -862,7 +862,7 @@ def get_weights(distDic):
 
     return weightDic
 
-def draw_networkx(args,output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2templates,templates):
+def draw_networkx(args,output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2templates,templates,cmd2templateCount):
     """ Finds the weighted edges and plots the NetworkX graph. Obtains labels for nodes and cluster IDs for connected nodes
     Input:
         args (argument parser) - parser of command line arguments,
@@ -907,9 +907,9 @@ def draw_networkx(args,output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd
     nodeTypeDic,colorslist = set_nodeColors(G,sourceDic,id_name)
 
     if (args.temporal):
-        pos = plot_temporal_networkx(G,pos,output_file,labels,colorslist,nodeTypeDic,id_name,figsize=figsize,font_size=args.font_size,node_size=args.node_size)
+        pos = plot_temporal_networkx(G,pos,output_file,labels,colorslist,nodeTypeDic,id_name,cmd2templateCount,figsize=figsize,font_size=args.font_size,node_size=args.node_size)
     else:
-        pos = plot_networkx(G,pos,output_file,labels,colorslist,nodeTypeDic,id_name,figsize=figsize,font_size=args.font_size,node_size=args.node_size)
+        pos = plot_networkx(G,pos,output_file,labels,colorslist,nodeTypeDic,id_name,cmd2templateCount,figsize=figsize,font_size=args.font_size,node_size=args.node_size)
 
     return G,weighted_edges,labels,clusters,pos
 
