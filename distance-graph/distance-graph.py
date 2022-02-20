@@ -330,7 +330,7 @@ def get_info(file_args, output_names, cmd2template, args):
         if template_nodes:
             unique_cmds2 = []
             for cmd in unique_cmds:
-                if (cmd in [cmd for lst in templates[0].values() for cmd in lst]) or (cmd in [cmd for lst in templates[1].values() for cmd in lst]):
+                if (cmd in [cmd for lst in templates.values() for cmd in lst]):
                     unique_cmds2.append(cmd)
             
             unique_cmds = unique_cmds2
