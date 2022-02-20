@@ -1169,7 +1169,7 @@ def plot_networkx(G,pos,output_file,labels,colorslist,nodeTypeDic,id_name,figsiz
 
     return pos
 
-def plot_temporal_networkx(G,pos,output_file,labels,colorslist,nodeTypeDic,id_name,figsize=(12,8),font_size=10,node_size=350,ip_alpha=0.1,cmd_alpha=0.2,edge_alpha=0.1):
+def plot_temporal_networkx(G,pos,output_file,labels,colorslist,nodeTypeDic,id_name,cmd2templateCount,figsize=(12,8),font_size=10,node_size=350,ip_alpha=0.1,cmd_alpha=0.2,edge_alpha=0.1):
     """ Plots NetworkX graph and saves image to output file
     Input:
         G (NetworkX graph) - graph with IP and command nodes to graph
@@ -1199,12 +1199,13 @@ def plot_temporal_networkx(G,pos,output_file,labels,colorslist,nodeTypeDic,id_na
             nx.draw_networkx_nodes(G,pos=pos,nodelist=nodelist,ax=ax,\
                         label=nodetype,alpha=alpha,node_size=node_size,node_shape="^",node_color=color)
         else:
+            node_sizes = [cmd2templateCount[node] for node in nodelist]
             if 'new' in nodetype:
                 alpha=0.4
             else:
                 alpha=cmd_alpha
             nx.draw_networkx_nodes(G,pos=pos,nodelist=nodelist,ax=ax,\
-                        label=nodetype,alpha=alpha,node_size=node_size,node_color=color)
+                        label=nodetype,alpha=alpha,node_size=node_sizes,node_color=color)
 
     nx.draw_networkx_edges(G,pos=pos,alpha=edge_alpha)
     nx.draw_networkx_labels(G,pos=pos,labels=labels,font_size=font_size)
