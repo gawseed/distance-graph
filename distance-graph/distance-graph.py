@@ -333,8 +333,10 @@ def get_info(file_args, output_names, cmd2template, args):
                 if (cmd in [cmd for lst in templates[0].values() for cmd in lst]) or (cmd in [cmd for lst in templates[1].values() for cmd in lst]):
                     unique_cmds2.append(cmd)
             
-            # templateCounts = calc_templateCount(templates,df,node_name)
             unique_cmds = unique_cmds2
+            templateCounts = calc_templateCount(templates,df,node_name)
+            cmd2templateCount = map_cmd2templateCount(cmd2template,templateCounts,unique_cmds)
+
             if args.labels:
                 labels = pickle.load(open(args.labels,"rb"))
                 unique_cmds,cmd_to_old_label = update_representativeCmd(unique_cmds,labels,cmd2template,templates)
