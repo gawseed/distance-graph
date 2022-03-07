@@ -279,6 +279,7 @@ def get_info(file_args, output_names, cmd2template, args):
     template_nodes = args.template_nodes
     temporal = args.temporal
     templates = {}
+    cmd2templateCount = {}
 
     df = pd.DataFrame()
 
@@ -310,27 +311,30 @@ def get_info(file_args, output_names, cmd2template, args):
 
         df2 = df.copy()[~df[id_name].isin(loggedInOnly)]
         df2 = df2[df2[node_name]!='[]']
-        cmds = list(df2[node_name].unique())
+        unique_cmds = list(df2[node_name].unique())
 
         cmdIPsDic,sourceDic = get_cmdIPsDic(file_args,loggedInOnly,id_name,login_index, temporal)
     else:
         df2 = df.copy()
         df2 = df2[df2[node_name]!='[]']
-        cmds = list(df2[node_name].unique())
+        unique_cmds = list(df2[node_name].unique())
         labelDic = get_labelDic(file_args,login_index,temporal)
         cmdIPsDic = None
+
+    got_unique_cmds = False
 
     if cmd2template:
         templates,cmd2template = get_templates(cmd2template)
         if cmdIPsDic:
-            unique_cmds,cmdIPsDic,templates = get_uniqueCmds(cmds,cmdIPsDic,{},templates,temporal)
+            unique_cmds,cmdIPsDic,templates = get_uniqueCmds(unique_cmds,cmdIPsDic,{},templates,temporal)
         else:
-            unique_cmds,labelDic,templates = get_uniqueCmds(cmds,cmdIPsDic,labelDic,templates,temporal)
+            unique_cmds,labelDic,templates = get_uniqueCmds(unique_cmds,cmdIPsDic,labelDic,templates,temporal)
 
         if template_nodes:
             unique_cmds2 = []
             for cmd in unique_cmds:
                 if (cmd in [cmd for lst in templates.values() for cmd in lst]):
+                # if (cmd in [cmd for lst in templates[0].values() for cmd in lst]) or (cmd in [cmd for lst in templates[1].values() for cmd in lst]):
                     unique_cmds2.append(cmd)
             
             unique_cmds = unique_cmds2
@@ -342,15 +346,23 @@ def get_info(file_args, output_names, cmd2template, args):
                 unique_cmds,cmd_to_old_label = update_representativeCmd(unique_cmds,labels,cmd2template,templates)
                 cmdToArray = {cmd[2:-2]:cmd for cmd in unique_cmds}
                 unique_cmds = [cmd[2:-2] for cmd in unique_cmds]
+
                 if cmdIPsDic:
                     cmdIPsDic = remap_dic(cmdIPsDic,cmd_to_old_label)
                 elif labelDic:
                     labelDic = remap_dic(labelDic,cmd_to_old_label)
-    else:
-        unique_cmds = cmds
+
+                cmd2templateCount = remap_dic(cmd2templateCount,cmd_to_old_label,'cmd')
+                
+                got_unique_cmds = True
+    
+    if got_unique_cmds == False:
         cmdToArray = {cmd[2:-2]:cmd for cmd in unique_cmds}
         unique_cmds = [cmd[2:-2] for cmd in unique_cmds]
 
+    # cmdToArray = {cmd[2:-2]:cmd for cmd in unique_cmds}
+    # unique_cmds = [cmd[2:-2] for cmd in unique_cmds]
+    
     distDic = get_distances(unique_cmds)
     weightDic = get_weights(distDic)
 
