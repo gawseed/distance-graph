@@ -145,6 +145,7 @@ def get_cmd2template(file_args,temporal):
         cmd2template (list) - list of two cmd2template dicts. cmd2template - maps templatizable commands to highest degree template
     """
     cmds,cmds2 = get_commandCounts(file_args,temporal)
+    # cmds,cmds2 = get_commandCounts2(file_args,temporal)
     cmd2template = templatize_cmds(cmds)
 
     if temporal:
