@@ -1203,25 +1203,30 @@ def plot_temporal_networkx(G,pos,output_file,labels,colorslist,nodeTypeDic,id_na
         pos=pickle.load(open(pos,"rb"))
         fixed_nodes = pos.keys()
         pos=nx.spring_layout(G,pos=pos,fixed=fixed_nodes,k=0.3)
-        
-    i=0
+    
+    i = 0
     for nodetype in nodeTypeDic:
         nodelist = nodeTypeDic[nodetype]
         color = colorslist[i]
-        i+=1
+        i += 1
 
         if id_name and id_name in nodetype:
             alpha=ip_alpha
             nx.draw_networkx_nodes(G,pos=pos,nodelist=nodelist,ax=ax,\
                         label=nodetype,alpha=alpha,node_size=node_size,node_shape="^",node_color=color)
         else:
-            node_sizes = [cmd2templateCount[node] for node in nodelist]
             if 'new' in nodetype:
                 alpha=0.4
             else:
                 alpha=cmd_alpha
-            nx.draw_networkx_nodes(G,pos=pos,nodelist=nodelist,ax=ax,\
-                        label=nodetype,alpha=alpha,node_size=node_sizes,node_color=color)
+            
+            if cmd2templateCount != {}:
+                node_size_template = [cmd2templateCount[node] for node in nodelist]
+                nx.draw_networkx_nodes(G,pos=pos,nodelist=nodelist,ax=ax,\
+                        label=nodetype,alpha=alpha,node_size=node_size_template,node_color=color)
+            else:
+                nx.draw_networkx_nodes(G,pos=pos,nodelist=nodelist,ax=ax,\
+                            label=nodetype,alpha=alpha,node_size=node_size,node_color=color)
 
     nx.draw_networkx_edges(G,pos=pos,alpha=edge_alpha)
     nx.draw_networkx_labels(G,pos=pos,labels=labels,font_size=font_size)
