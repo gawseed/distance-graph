@@ -809,7 +809,6 @@ def update_representativeCmd(unique_cmds,labels,cmd2templates,templates):
 
     i = 0
     for cmd in unique_cmds2:
-        print(i)
         template = cmd2templates[cmd]
         temp_cmds = [temp_cmd[2:-2] for temp_cmd in templates[template]]
 
@@ -828,8 +827,8 @@ def update_representativeCmd(unique_cmds,labels,cmd2templates,templates):
         #         unique_cmds.append(temp_cmd)
         #         remove_cmds.append(cmd)
         #         break
-            
-    unique_cmds = [str([change_cmds[cmd]]) if str([cmd]) in change_cmds else cmd for cmd in unique_cmds]
+
+    unique_cmds = [str([change_cmds[cmd[2:-2]]]) if cmd[2:-2] in change_cmds else cmd for cmd in unique_cmds]
     # unique_cmds = [str([cmd]) for cmd in unique_cmds]
     
     return unique_cmds, change_cmds
