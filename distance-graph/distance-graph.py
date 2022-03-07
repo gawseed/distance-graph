@@ -217,6 +217,55 @@ def get_commandCounts(file_args, temporal):
 
     return cmdCount,cmdCount2
 
+def get_commandCounts2(file_args, temporal):
+    """ Counts number of commands run in the dataset and returns dict with command and respective counts
+        If looking at temporal periods, then return two dictionaries with period 1 commands and period 1 & 2 commands respectively
+    Input:
+        file_args (list) - list of file argument lists with format [filename, node name, label name, identifier name]
+    Output:
+        cmdCount (dict) - maps command to number of times the cmd appears in the data
+    """
+    cmdCount = {}
+    cmdCount2 = {}
+
+    file_num = 1
+    for input_file in file_args:
+        filename = input_file[0]
+        node_name = input_file[1]
+
+        db = pyfsdb.Fsdb(filename)
+        node_index = db.get_column_number(node_name)
+
+        for row in db:
+            node = row[node_index]
+            
+            if node[0] != "[":
+                node = str([node])
+
+            if temporal:
+                if file_num in temporal: ## if file is in period 2, add nodes to cmdCount2
+                    if cmdCount2 == {}:
+                        cmdCount2 = cmdCount.copy()
+                    if node not in cmdCount2:
+                        cmdCount2[node] = 1
+                    else:
+                        cmdCount2[node] += 1
+                else:
+                    if node not in cmdCount:
+                        cmdCount[node] = 1
+                    else:
+                        cmdCount[node] += 1
+            else:
+                if node not in cmdCount:
+                    cmdCount[node] = 1
+                else:
+                    cmdCount[node] += 1
+        
+        db.close()
+        file_num += 1
+
+    return cmdCount,cmdCount2
+
 def get_inputFile_args(inputfile_args):
     """ Parse each input file arg and return filename, node column name, label column name, and identifier column name
     Input:
