@@ -153,7 +153,9 @@ def get_cmd2template(file_args,temporal):
     else:
         cmd2template2 = {}
 
-    return [cmd2template,cmd2template2]
+    templates = [cmd2template,cmd2template2]
+
+    return templates
 
 def templatize_cmds(cmds):
     cmd_graph = CommandGraph()
