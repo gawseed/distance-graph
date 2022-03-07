@@ -373,12 +373,17 @@ def get_info(file_args, output_names, cmd2template, args):
 
     return weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2template,templates,cmd2templateCount
 
-def remap_dic(dic, cmd_to_old_label):
-    for cmd,old_label in cmd_to_old_label.items():
-        cmd = str([cmd])
-        old_label = str([old_label])
-        dic[old_label] = dic[cmd]
-        dic.pop(cmd)
+def remap_dic(dic, cmd_to_old_label, keys='array'):
+    if keys == 'array':
+        for cmd,old_label in cmd_to_old_label.items():
+            cmd = str([cmd])
+            old_label = str([old_label])
+            dic[old_label] = dic[cmd]
+            dic.pop(cmd)
+    else:
+        for cmd,old_label in cmd_to_old_label.items():
+            dic[old_label] = dic[cmd]
+            dic.pop(cmd)
     return dic
 
 def get_loggedInOnly(df,node_name,label,id_name):
