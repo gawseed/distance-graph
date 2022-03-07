@@ -990,20 +990,20 @@ def add_newLabels(G,labels,cmd2templates,templates):
     for node in nodes:
         if node in labels:
             new_labels[node] = labels[node]
-        elif node in templatized_cmds:
-            template = cmd2templates[node]
-            temp_cmds = templates[template]
+        # elif node in templatized_cmds:
+        #     template = cmd2templates[node]
+        #     temp_cmds = templates[template]
 
-            cmd_in_prev_labels = False
-            for arrayCmd in temp_cmds:
-                cmd = arrayCmd[2:-2]
-                if cmd in labels:
-                    new_labels[node] = labels[cmd]
-                    cmd_in_prev_labels = True
-                    break
-            if cmd_in_prev_labels == False:
-                new_labels[node] = i
-                i+=1
+        #     cmd_in_prev_labels = False
+        #     for arrayCmd in temp_cmds:
+        #         cmd = arrayCmd[2:-2]
+        #         if cmd in labels:
+        #             new_labels[node] = labels[cmd]
+        #             cmd_in_prev_labels = True
+        #             break
+        #     if cmd_in_prev_labels == False:
+        #         new_labels[node] = i
+        #         i+=1
         else:
             new_labels[node] = i
             i+=1
