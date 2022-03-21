@@ -69,6 +69,12 @@ def parse_args():
     parser.add_argument("-c", "--cluster-list", default=None, type=str,
                         help="Output enumerated cluster list to here")
 
+    parser.add_argument("-t", "--template-list", default=None, type=str,
+                    help="Output list of templates to here")
+
+    parser.add_argument("-tc", "--templatecmd-list", default=None, type=str,
+                    help="Output list of templates and templatized commands to here")
+
     parser.add_argument("-pf", "--position-file", default=None, type=str,
                         help="Output pickle file that contains generated NetworkX graph positional dictionary to here")
 
