@@ -1553,5 +1553,27 @@ def main():
                 outh.append([cluster_id,cmd])
             outh.close()
 
+    ## create template list to FSDB file
+    if (args.template_list):
+        if (args.template_nodes): ## if template nodes are being graphed, produce template list that contains template, example command, and label
+            outh = pyfsdb.Fsdb(out_file=args.template_list)
+            outh.out_column_names=['template','command','node','label']
+            template_list = []
+            for cmd in clusters.keys():
+                template = ' '.join(cmd2template[cmd])
+                node = labels[cmd]
+                if sourceDic != {}:
+                    label = sourceDic[cmd]
+                else:
+                    label = ''
+                template_list.append([template,cmd,node,label])
+
+            template_list = sorted(template_list)
+            for line in template_list:
+                outh.append(line)
+            outh.close()
+        else:
+            print("Template nodes were not graphed. No template list to output.")
+    
 if __name__ == "__main__":
     main()
