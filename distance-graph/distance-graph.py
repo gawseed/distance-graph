@@ -1506,7 +1506,12 @@ def main():
 
     ## save labels dict to pickle file
     if (args.labels_file):
-        pickle.dump(labels, open(args.labels_file, "wb" ))
+        if (args.template_nodes):
+            output_labels = {cmd:{'label':label, 'template':cmd2template[cmd]} for cmd,label in labels.items()}
+            pickle.dump(output_labels, open(args.labels_file, "wb"))
+        else:
+            output_labels = {cmd:{'label':label, 'template':"N/A"} for cmd,label in labels.items()}
+            # pickle.dump(labels, open(args.labels_file, "wb" ))
 
     ## create edge list to FSDB file
     if (args.edge_list):
