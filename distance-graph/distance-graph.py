@@ -1575,5 +1575,23 @@ def main():
         else:
             print("Template nodes were not graphed. No template list to output.")
     
+    if (args.templatecmd_list):
+        if (args.template_nodes):
+            outh = pyfsdb.Fsdb(out_file=args.templatecmd_list)
+            outh.out_column_names=['template','command']
+            tc_list = []
+            for temp,cmds in templates.items():
+                template = ' '.join(temp)
+                cmds = sorted(set(cmds))
+                cmds = [cmd[2:-2] for cmd in cmds]
+                for cmd in cmds:
+                    tc_list.append([template,cmd])
+            tc_list = sorted(tc_list)
+            for line in tc_list:
+                outh.append(line)
+            outh.close()
+        else:
+            print("Template nodes were not graphed. No template command list to output.")
+
 if __name__ == "__main__":
     main()
