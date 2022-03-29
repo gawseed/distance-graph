@@ -1241,7 +1241,9 @@ def plot_networkx(G,pos,output_file,labels,colorslist,nodeTypeDic,id_name,cmd2te
 
     nx.draw_networkx_edges(G,pos=pos,alpha=edge_alpha)
     nx.draw_networkx_labels(G,pos=pos,labels=labels,font_size=font_size)
-    ax.legend(scatterpoints=1, markerscale=0.75)
+    legend = ax.legend(scatterpoints=1, markerscale=0.75)
+    for leg in legend.legendHandles:
+        leg._sizes = [250]
 
     ## remove black border
     ax.spines['top'].set_visible(False)
@@ -1298,7 +1300,10 @@ def plot_temporal_networkx(G,pos,output_file,labels,colorslist,nodeTypeDic,id_na
 
     nx.draw_networkx_edges(G,pos=pos,alpha=edge_alpha)
     nx.draw_networkx_labels(G,pos=pos,labels=labels,font_size=font_size)
-    ax.legend(scatterpoints=1, markerscale=0.75)
+
+    legend = ax.legend(scatterpoints=1, markerscale=0.75)
+    for leg in legend.legendHandles:
+        leg._sizes = [250]
 
     ## remove black border
     ax.spines['top'].set_visible(False)
