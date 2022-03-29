@@ -384,9 +384,9 @@ def get_info(file_args, output_names, cmd2template, args):
     if cmd2template:
         templates,cmd2template = get_templates(cmd2template)
         if cmdIPsDic:
-            unique_cmds,cmdIPsDic,templates = get_uniqueCmds(unique_cmds,cmdIPsDic,{},templates,temporal)
+            unique_cmds,cmdIPsDic,templates,old_templates = get_uniqueCmds(unique_cmds,cmdIPsDic,{},templates,temporal)
         else:
-            unique_cmds,labelDic,templates = get_uniqueCmds(unique_cmds,cmdIPsDic,labelDic,templates,temporal)
+            unique_cmds,labelDic,templates,old_templates = get_uniqueCmds(unique_cmds,cmdIPsDic,labelDic,templates,temporal)
 
         if template_nodes:
             unique_cmds2 = []
@@ -429,7 +429,7 @@ def get_info(file_args, output_names, cmd2template, args):
     else:
         sourceDic = {cmd:"+".join(labelDic[cmdToArray[cmd]])+"_"+node_name for cmd in unique_cmds}
 
-    return weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2template,templates,cmd2templateCount
+    return weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2template,templates,cmd2templateCount,old_templates
 
 def remap_dic(dic, cmd_to_old_label, keys='array'):
     if keys == 'array':
