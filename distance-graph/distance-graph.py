@@ -1518,8 +1518,8 @@ def main():
                 cluster_id = clusters[cmd1]
                 num1 = labels[cmd1]
                 num2 = labels[cmd2]
-                template1 = cmd2template[cmd1]
-                template2 = cmd2template[cmd2]
+                template1 = ' '.join(cmd2template[cmd1])
+                template2 = ' '.join(cmd2template[cmd2])
                 outh.append([cluster_id,round(weight,3),num1,num2,cmd1,cmd2,template1,template2])
             outh.close()
         else:
@@ -1538,7 +1538,7 @@ def main():
             outh = pyfsdb.Fsdb(out_file=args.cluster_list)
             outh.out_column_names=['cluster_id','command','template']
             for cmd,cluster_id in clusters.items():
-                template = cmd2template[cmd]
+                template = ' '.join(cmd2template[cmd])
                 outh.append([cluster_id,cmd,template])
             outh.close()
         else:
