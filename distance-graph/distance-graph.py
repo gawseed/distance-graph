@@ -1233,6 +1233,8 @@ def plot_networkx(G,pos,output_file,labels,colorslist,nodeTypeDic,id_name,cmd2te
             
             if cmd2templateCount != {}:
                 node_size_template = [cmd2templateCount[node] for node in nodelist]
+                alpha = 0.25
+                # alpha = [alpha if cmd2template[node] not in old_templates else 0.085 for node in nodelist]
                 nx.draw_networkx_nodes(G,pos=pos,nodelist=nodelist,ax=ax,\
                         label=nodetype,alpha=alpha,node_size=node_size_template,node_color=color)
             else:
@@ -1289,6 +1291,7 @@ def plot_temporal_networkx(G,pos,output_file,labels,colorslist,nodeTypeDic,id_na
                 alpha=0.4
             else:
                 alpha=cmd_alpha
+                alpha = [alpha if cmd2template[node] not in old_templates else 0.085 for node in nodelist]
             
             if cmd2templateCount != {}:
                 node_size_template = [cmd2templateCount[node] for node in nodelist]
