@@ -1497,8 +1497,8 @@ def main():
     else:
         cmd2template = None
 
-    weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2template,templates,cmd2templateCount = get_info(file_args, output_names, cmd2template, args)
-    G,weighted_edges,labels,clusters,pos = draw_networkx(args,output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2template,templates,cmd2templateCount)
+    weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2template,templates,cmd2templateCount,old_templates = get_info(file_args, output_names, cmd2template, args)
+    G,weighted_edges,labels,clusters,pos = draw_networkx(args,output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2template,cmd2templateCount,old_templates)
 
     ## save NetworkX graph position file to pickle file
     if (args.position_file):
