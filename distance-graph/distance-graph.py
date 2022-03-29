@@ -986,7 +986,7 @@ def draw_networkx(args,output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd
 
     if (args.labels):
         labels = pickle.load(open(args.labels,"rb"))
-        labels = add_newLabels(G,labels,cmd2templates,templates)
+        labels = add_newLabels(G,labels,cmd2templates)
     else:
         labels = get_numberNodes(G)
 
@@ -1051,42 +1051,29 @@ def get_topK_edges(k,edgeweight,k_edges=False):
     
     return topK_edges
 
-def add_newLabels(G,labels,cmd2templates,templates):
+def add_newLabels(G,labels,cmd2templates):
     nodes = G.nodes()
-    num_labels = list(labels.values())
+    num_labels = [labels[cmd]['label'] for cmd in labels]
+    template2label = {labels[cmd]['template']:labels[cmd]['label'] for cmd in labels}
+    # num_labels = list(labels.values())
     new_labels = {}
-
-    if templates != {}:
-        templatized_cmds = [cmd[2:-2] for lst in templates.values() for cmd in lst]
-    else:
-        templatized_cmds = []
     
     i=max(num_labels)+1
     for node in nodes:
         if node in labels:
-            new_labels[node] = labels[node]
-        # elif node in templatized_cmds:
-        #     template = cmd2templates[node]
-        #     temp_cmds = templates[template]
-
-        #     cmd_in_prev_labels = False
-        #     for arrayCmd in temp_cmds:
-        #         cmd = arrayCmd[2:-2]
-        #         if cmd in labels:
-        #             new_labels[node] = labels[cmd]
-        #             cmd_in_prev_labels = True
-        #             break
-        #     if cmd_in_prev_labels == False:
-        #         new_labels[node] = i
-        #         i+=1
+            new_labels[node] = labels[node]['label']
         else:
-            new_labels[node] = i
-            i+=1
-        # else:
-        #     while i in num_labels:
-        #         i += 1
-        #     labels[node] = i
-        #     num_labels.append(i)
+            if cmd2templates != {}:
+                template = cmd2templates[node]
+                if template in template2label:
+                    label = template2label[template]
+                    new_labels[node] = label
+                else:
+                    new_labels[node] = i
+                i+=1
+            else:
+                new_labels[node] = i
+                i+=1
     
     return new_labels
 
