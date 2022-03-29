@@ -655,8 +655,12 @@ def get_uniqueCmds(cmds,cmdIPsDic,labelDic,templates,temporal):
 
     if temporal:
         new_templates = find_new_templates(templates)
+        old_templates = find_old_templates(templates)
         to_remove = []
         to_add = []
+    else:
+        new_templates = templates
+        old_templates = templates
 
     template2cmd = combine_templates(templates)
     # for template2cmd in templates:
@@ -731,12 +735,12 @@ def get_uniqueCmds(cmds,cmdIPsDic,labelDic,templates,temporal):
         cmdIPsDic = update_cmdIPsDic(cmdIPsDic,cmdTemplateDic)
         unique_cmds = list(cmdIPsDic.keys())
         # print("Finished with cmdIPsDic")
-        return unique_cmds,cmdIPsDic,template2cmd
+        return unique_cmds,cmdIPsDic,template2cmd,old_templates
     else:
         labelDic = update_labelDic(labelDic, cmdTemplateDic)
         unique_cmds = list(labelDic.keys())
         # print("Finished with labelDic")
-        return unique_cmds,labelDic,template2cmd
+        return unique_cmds,labelDic,template2cmd,old_templates
 
 def find_new_templates(templates):
     """ Compares templates from period 1 to period 2 and returns list of templates from period 2 not found in period 1
@@ -750,6 +754,19 @@ def find_new_templates(templates):
     new_templates = [template for template in templates2 if template not in templates1]
 
     return new_templates
+
+def find_old_templates(templates):
+    """ Compares templates from period 1 to period 2 and returns list of templates from period 2 not found in period 1
+    Input:
+        templates (list) - list containing two cmd2template dictionaries from period 1 and period 2
+    Output:
+        new_templates (list) - list of new templates
+    """
+    templates1 = templates[0].keys()
+    templates2 = templates[1].keys()
+    old_templates = [template for template in templates1 if template not in templates2]
+
+    return old_templates
 
 def combine_templates(templates):
     """ Combines list of template2cmd dicts into one dictionary
