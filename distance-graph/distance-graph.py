@@ -632,8 +632,8 @@ def calc_templateCount(template2cmd,df,node_name):
 
 def map_cmd2templateCount(cmd2template,templateCounts,unique_cmds):
     unique_cmds = [cmd[2:-2] for cmd in unique_cmds]
-    #cmd2templateCount = {cmd:templateCounts[cmd2template[cmd]] for cmd in unique_cmds}
-    cmd2templateCount = {cmd:int(math.sqrt(5*templateCounts[cmd2template[cmd]])) for cmd in unique_cmds}
+    cmd2templateCount = {cmd:templateCounts[cmd2template[cmd]] for cmd in unique_cmds}
+    # cmd2templateCount = {cmd:int(math.sqrt(5*templateCounts[cmd2template[cmd]])) for cmd in unique_cmds}
     return cmd2templateCount
 
 def get_uniqueCmds(cmds,cmdIPsDic,labelDic,templates,temporal):
@@ -1276,6 +1276,7 @@ def plot_temporal_networkx(G,pos,output_file,labels,colorslist,nodeTypeDic,id_na
         fixed_nodes = pos.keys()
         pos=nx.spring_layout(G,pos=pos,fixed=fixed_nodes,k=0.3)
     
+    all_node_sizes = []
     i = 0
     for nodetype in nodeTypeDic:
         nodelist = nodeTypeDic[nodetype]
@@ -1294,7 +1295,9 @@ def plot_temporal_networkx(G,pos,output_file,labels,colorslist,nodeTypeDic,id_na
                 alpha = [alpha if cmd2template[node] not in old_templates else 0.085 for node in nodelist]
             
             if cmd2templateCount != {}:
-                node_size_template = [cmd2templateCount[node] for node in nodelist]
+                node_sizes = [cmd2templateCount[node] for node in nodelist]
+                all_node_sizes += node_sizes
+                node_size_template = [int((5*node)**0.5) for node in node_sizes]
                 nx.draw_networkx_nodes(G,pos=pos,nodelist=nodelist,ax=ax,\
                         label=nodetype,alpha=alpha,node_size=node_size_template,node_color=color)
             else:
