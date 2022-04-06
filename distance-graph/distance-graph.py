@@ -11,7 +11,7 @@ import Levenshtein
 import itertools
 import re
 import pickle
-import math
+import numpy as np
 
 TOKENIZE_PATTERN = re.compile('[\s"=;|&><]')
 _NIX_COMMANDS = None
