@@ -1,7 +1,7 @@
 # from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
 from tools.arguments import *
 from tools.templatizer import *
-from templates import Templates
+from tools.templates import Templates
 import pyfsdb
 import pandas as pd
 # import os
