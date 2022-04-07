@@ -1,5 +1,5 @@
 # from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
-from tools.argparser import *
+from tools.arguments import *
 from tools.templatizer import *
 from templates import Templates
 import pyfsdb
