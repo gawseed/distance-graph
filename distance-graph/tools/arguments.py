@@ -5,6 +5,7 @@ class Arguments():
         self.args = self.parse_args()
         self.output_names = self.args.output_names
         self.__init_file_args()
+        self.get_outputNames()
     
     def __init_file_args(self):
         self.file_args = list(filter(None,[self.args.input_file1, self.args.input_file2, self.args.input_file3, self.args.input_file4]))
@@ -133,3 +134,43 @@ class Arguments():
             
             if (output_id == '') and (input_id != ''):
                 raise Exception("Identifier column name for input file {} is provided, but not provided in output names.".format(file_num))
+
+    def get_outputNames(self):
+        """ Parse each output name argument and return node name, label name, and identifier name to be used for final output and graph
+        Input:
+            output_names (list) - list of output names to use for node, label, and identifier
+        Output:
+            node_name, label_name, identifier_name (str) - return node, label, and identifier for output
+        """
+        self.node_name = self.output_names[0]
+        self.label_name = self.output_names[1]
+        self.identifier_name = self.output_names[2]
+        # return node_name, label_name, identifier_name
+    
+
+class FileArguments():
+    def __init__(self, file_args, output_names):
+        self.filename = file_args[0]
+        self.node_name = file_args[1]
+        self.label_name = file_args[2]
+        self.identifier_name = file_args[3]
+        # self.map_output_names()
+
+    def map_output_names(self, file_args, output_names):
+        """ Maps input file column name to output name. Returns dictionary with 
+        Input:
+            file_args (list) - list of arguments user provided for input file
+            output_names (list) - list of output names to use for node, label, and identifier
+        Output:
+            mapNameDic (dict) - key: input column name (str) / value: output column name (str)
+        """
+        mapNameDic = {}
+        input_names = file_args[1:]
+        if input_names[1] != '':
+            input_names[1] = 'label'
+
+        for i in range(len(input_names)):
+            if output_names[i] != '':
+                mapNameDic[input_names[i]] = output_names[i]
+
+        return mapNameDic
