@@ -881,7 +881,7 @@ def get_numberNodes(G):
     Output:
         labels (dict) - maps node to labeled number
     """
-    nodes = G.nodes()
+    nodes = sorted(G.nodes())
     labels = {}
 
     i=0
