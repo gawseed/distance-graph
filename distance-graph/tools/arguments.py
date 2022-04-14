@@ -144,16 +144,16 @@ class Arguments():
         """
         self.node_name = self.output_names[0]
         self.label_name = self.output_names[1]
-        self.identifier_name = self.output_names[2]
+        self.id_name = self.output_names[2]
         # return node_name, label_name, identifier_name
     
 
 class FileArguments():
-    def __init__(self, file_args, output_names):
+    def __init__(self, file_args):
         self.filename = file_args[0]
         self.node_name = file_args[1]
         self.label_name = file_args[2]
-        self.identifier_name = file_args[3]
+        self.id_name = file_args[3]
         # self.map_output_names()
 
     def map_output_names(self, file_args, output_names):
