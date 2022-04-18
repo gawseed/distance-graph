@@ -5,9 +5,20 @@ import tqdm
 class Templates():
     def __init__(self, stopwords, file_args, temporal):
         self.stopwords = stopwords
-        self.get_cmd2template(file_args, temporal)
+        self.templates = []
+        self.cmd2template = {}
+        self.template2cmd = {}
+        self.old_templates = []
+        self.new_templates = []
+        self.template_counts = {}
+        self.cmd2template_count = {}
 
-    def get_cmd2template(self, file_args,temporal):
+        self.templatize(file_args, temporal)
+        self.build_cmd2template()
+        self._init_template2cmd()
+        self.find_new_old_templates(temporal)
+
+    def templatize(self, file_args,temporal):
         """ Given data file with commands, return list of command templates dict. If performing temporal analysis, then get templates for period 1 and period 2
         Input:
             file_args (list) - list of input FSDB files
@@ -85,3 +96,46 @@ class Templates():
             file_num += 1
 
         return cmdCount,cmdCount2
+    
+    def build_cmd2template(self):
+        templates = []
+        cmd2template = {}
+
+        for cmd2template in self.templates:
+            template2cmd = {}
+            if cmd2template: ## cmd2template is not None
+                for cmd,basename in cmd2template.items():
+                    template = basename[2]
+                    cmd2template[cmd[2:-2]] = template
+                    if template not in template2cmd:
+                        template2cmd[template] = [cmd]
+                    else:
+                        template2cmd[template] = template2cmd[template] + [cmd]
+                templates.append(template2cmd)
+            else:
+                templates.append({})
+        
+        self.templates = templates
+        self.cmd2template = cmd2template
+    
+    def find_new_old_templates(self, temporal):
+        if temporal:
+            templates1 = self.templates[0].keys()
+            templates2 = self.templates[1].keys()
+            new_templates = [template for template in templates2 if template not in templates1]
+            old_templates = [template for template in templates1 if template not in templates2]
+
+            self.new_templates = new_templates
+            self.old_templates = old_templates
+    
+    def _init_template2cmd(self):
+        templateDic = {}
+        for template2cmd in self.templates:
+            for template,cmds in template2cmd.items():
+                if template not in templateDic:
+                    templateDic[template] = cmds
+                else:
+                    templateDic[template] = templateDic[template] + cmds
+
+        templateDic = {template:sorted(set(cmds)) for template,cmds in templateDic.items()}
+        self.template2cmd = templateDic
