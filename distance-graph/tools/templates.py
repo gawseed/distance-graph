@@ -99,14 +99,14 @@ class Templates():
     
     def build_cmd2template(self):
         templates = []
-        cmd2template = {}
+        cmd2template2 = {}
 
         for cmd2template in self.templates:
             template2cmd = {}
             if cmd2template: ## cmd2template is not None
                 for cmd,basename in cmd2template.items():
                     template = basename[2]
-                    cmd2template[cmd[2:-2]] = template
+                    cmd2template2[cmd[2:-2]] = template
                     if template not in template2cmd:
                         template2cmd[template] = [cmd]
                     else:
@@ -116,7 +116,7 @@ class Templates():
                 templates.append({})
         
         self.templates = templates
-        self.cmd2template = cmd2template
+        self.cmd2template = cmd2template2
     
     def find_new_old_templates(self, temporal):
         if temporal:
