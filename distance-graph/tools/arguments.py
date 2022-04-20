@@ -3,7 +3,11 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
 class Arguments():
     def __init__(self):
         self.args = self.parse_args()
+        self.node_name = ''
+        self.label_name = ''
+        self.id_name = ''
         self.output_names = self.args.output_names
+        
         self.__init_file_args()
         self.get_outputNames()
     
