@@ -151,18 +151,19 @@ def get_info2(args, cmd2template):
     got_unique_cmds = False
 
     if cmd2template:
-        # data.find_unique_templatized_cmds(args, cmd2template, temporal)
-        # unique_cmds = data.unique_cmds
+        data.find_unique_templatized_cmds(args, cmd2template, temporal)
+        unique_cmds = data.unique_cmds
         # cmdIPsDic = None
-        # labelDic = data.labelDic
-        # old_templates = cmd2template.old_templates
-        templates = cmd2template.templates
+        labelDic = data.labelDic
+        templates = cmd2template.template2cmd
+        old_templates = cmd2template.old_templates
+
+        # templates = cmd2template.templates
         cmd2template = cmd2template.cmd2template
-        # templates,cmd2template = get_templates(cmd2template)
-        if cmdIPsDic:
-            unique_cmds,cmdIPsDic,templates,old_templates = get_uniqueCmds(data.unique_cmds,cmdIPsDic,{},templates,temporal)
-        else:
-            unique_cmds,labelDic,templates,old_templates = get_uniqueCmds(data.unique_cmds,cmdIPsDic,labelDic,templates,temporal)
+        # if cmdIPsDic:
+        #     unique_cmds,cmdIPsDic,templates,old_templates = get_uniqueCmds(data.unique_cmds,cmdIPsDic,{},templates,temporal)
+        # else:
+        #     unique_cmds,labelDic,templates,old_templates = get_uniqueCmds(data.unique_cmds,cmdIPsDic,labelDic,templates,temporal)
 
         if template_nodes:
             unique_cmds2 = []
