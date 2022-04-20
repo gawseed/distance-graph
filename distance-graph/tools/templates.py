@@ -139,3 +139,11 @@ class Templates():
 
         templateDic = {template:sorted(set(cmds)) for template,cmds in templateDic.items()}
         self.template2cmd = templateDic
+    
+    def calculate_template_counts(self, df, node_name, unique_cmds):
+        for template,cmds in self.template2cmd.items():
+            count = df[node_name].isin(cmds).sum()
+            self.template_counts[template] = count
+        
+        unique_cmds = [cmd[2:-2] for cmd in unique_cmds]
+        self.cmd2template_count = {cmd:self.template_counts[self.cmd2template[cmd]] for cmd in unique_cmds}

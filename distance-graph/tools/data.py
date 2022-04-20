@@ -251,3 +251,10 @@ class Data():
                     del updated_labelDic[cmds] ## only keep first representative command
     
         self.labelDic = updated_labelDic
+
+    def get_template_nodes(self, templates):
+        unique_cmds = []
+        for cmd in self.unique_cmds:
+            if (cmd in [cmd for lst in templates.template2cmd.values() for cmd in lst]):
+                unique_cmds.append(cmd)
+        self.unique_cmds = unique_cmds

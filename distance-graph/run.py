@@ -132,6 +132,7 @@ def get_info2(args, cmd2template):
         cmd2template (dict) - key: command (str) / value: template (tuple)
     """
     template_nodes = args.args.template_nodes
+    templates_class = cmd2template
     temporal = args.args.temporal
     templates = {}
     cmd2templateCount = {}
@@ -142,10 +143,8 @@ def get_info2(args, cmd2template):
     if args.id_name != '':
         cmdIPsDic = data.labelDic
         sourceDic = data.sourceDic
-        # cmdIPsDic,sourceDic = get_cmdIPsDic(args.file_args,data.loggedInOnly,args.id_name,login_index, temporal)
     else:
         labelDic = data.labelDic
-        # labelDic = get_labelDic(args.file_args,login_index,temporal)
         cmdIPsDic = None
 
     got_unique_cmds = False
@@ -166,15 +165,22 @@ def get_info2(args, cmd2template):
         #     unique_cmds,labelDic,templates,old_templates = get_uniqueCmds(data.unique_cmds,cmdIPsDic,labelDic,templates,temporal)
 
         if template_nodes:
-            unique_cmds2 = []
-            for cmd in unique_cmds:
-                if (cmd in [cmd for lst in templates.values() for cmd in lst]):
-                # if (cmd in [cmd for lst in templates[0].values() for cmd in lst]) or (cmd in [cmd for lst in templates[1].values() for cmd in lst]):
-                    unique_cmds2.append(cmd)
+            # unique_cmds2 = []
+            # for cmd in unique_cmds:
+            #     if (cmd in [cmd for lst in templates.values() for cmd in lst]):
+            #     # if (cmd in [cmd for lst in templates[0].values() for cmd in lst]) or (cmd in [cmd for lst in templates[1].values() for cmd in lst]):
+            #         unique_cmds2.append(cmd)
             
-            unique_cmds = unique_cmds2
-            templateCounts = calc_templateCount(templates,data.df,args.node_name)
-            cmd2templateCount = map_cmd2templateCount(cmd2template,templateCounts,unique_cmds)
+            # unique_cmds = unique_cmds2
+            data.get_template_nodes(templates_class)
+            unique_cmds = data.unique_cmds
+
+            templates_class.calculate_template_counts(data.df, args.node_name, unique_cmds)
+            # templateCounts = templates_class.template_counts
+            cmd2templateCount = templates_class.cmd2template_count
+            
+            # templateCounts = calc_templateCount(templates,data.df,args.node_name)
+            # cmd2templateCount = map_cmd2templateCount(cmd2template,templateCounts,unique_cmds)
 
             if args.args.labels:
                 labels = pickle.load(open(args.args.labels,"rb"))
