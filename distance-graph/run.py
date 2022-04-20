@@ -140,12 +140,12 @@ def get_info2(args, cmd2template):
     login_index = False
 
     if args.id_name != '':
-        # cmdIPsDic = data.labelDic
-        # sourceDic = data.sourceDic
-        cmdIPsDic,sourceDic = get_cmdIPsDic(args.file_args,data.loggedInOnly,args.id_name,login_index, temporal)
+        cmdIPsDic = data.labelDic
+        sourceDic = data.sourceDic
+        # cmdIPsDic,sourceDic = get_cmdIPsDic(args.file_args,data.loggedInOnly,args.id_name,login_index, temporal)
     else:
-        # labelDic = data.labelDic
-        labelDic = get_labelDic(args.file_args,login_index,temporal)
+        labelDic = data.labelDic
+        # labelDic = get_labelDic(args.file_args,login_index,temporal)
         cmdIPsDic = None
 
     got_unique_cmds = False
