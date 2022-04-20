@@ -14,6 +14,7 @@ class Data():
 
         self.__init_dataframe(args)
         self.find_unique_commands(args)
+        self.build_labelDic(args)
     
     def __init_dataframe(self, args):
         df = pd.DataFrame()
@@ -58,74 +59,195 @@ class Data():
     
     def find_unique_commands(self, args):
         self.unique_cmds = list(self.df[args.node_name].unique())
-
-    def get_cmdIPsDic(self, args, loggedInOnly,id_name,login_index,temporal):
-        """ Returns dict that contains IP addresses that ran the command and from what source
-        Input:
-            file_args (list) - list of file argument lists with format [filename, node name, label name, identifier name]
-            loggedInOnly (list) - list of IPs that only logged in
-            id_name (str) - column name of identifier column (eg. "ip")
-            login_index (False/int) - index of login successful
-            temporal (None/list) - list of file numbers (period 2) for temporal analysis
-        Output:
-            cmdIPsDic (dict) - key: command (str) / value: dictionary with key: source (str) & value: IPs that ran command (list)
-        """
-        cmdIPsDic = {}
-        labelIPDic = {}
-
-        seenNodes = []
-
+    
+    def build_labelDic(self, args):
+        seen_nodes = set()
         file_num = 1
+
         for file_arg in args.file_args:
             inputfile_args = FileArguments(file_arg)
-            # filename, input_node_name, input_label_name, input_id_name = get_inputFile_args(inputfile_args)
-            db = pyfsdb.Fsdb(inputfile_args.filename)
-            seenNodes = list(set(seenNodes))
 
-            id_index = db.get_column_number(inputfile_args.id_name)
+            db = pyfsdb.Fsdb(inputfile_args.filename)
             node_index = db.get_column_number(inputfile_args.node_name)
 
+            ## if id given
+            if args.id_name != '':
+                id_index = db.get_column_number(inputfile_args.id_name)
+                ident_label = inputfile_args.label_name
+            
             for row in db:
-                ident = row[id_index] ## identifier (IP address)
-                
-                if ident in loggedInOnly: ## if IP only logged in, do not record
-                    continue
-
-                ## check if login_index is provided. Skip over data where login_successful is false
-                if (login_index != False) and (row[login_index] == 'False'):
-                    continue
-                
                 node = row[node_index]
                 label = inputfile_args.label_name
-                ident_label = label
 
-                if temporal: ## if doing temporal analysis
-                    if (file_num in temporal) and (node not in seenNodes): ## if looking at period 2 input file and node not seen
+                if args.args.temporal:
+                    if (file_num in args.args.temporal) and (node not in seen_nodes): ## if looking at period 2 input file and node not seen
                         label = "new_"+label
-                    elif node in seenNodes: ## if node has been seen, continue
+                    elif node in seen_nodes: ## if node has been seen, continue
                         continue
                     else:
-                        seenNodes.append(node)
+                        seen_nodes.add(node)
                 
                 if node[0]!="[":
                     node = str([node])
                 
-                if node not in cmdIPsDic:
-                    cmdIPsDic[node] = {label: [ident]}
+                if args.id_name != '':
+                    ident = row[id_index]
+                    if ident in self.loggedInOnly:
+                        continue
+                    self.update_labelDic_with_IPs(node, ident, label, ident_label)
                 else:
-                    if (label in cmdIPsDic[node]) and (ident not in cmdIPsDic[node][label]):
-                            cmdIPsDic[node][label].append(ident)
-                    else:
-                        cmdIPsDic[node][label] = [ident]
+                    self.update_labelDic(node, label)
 
-                if ident not in labelIPDic:
-                    labelIPDic[ident] = [ident_label]
-                elif ident in labelIPDic and ident_label not in labelIPDic[ident]:
-                    labelIPDic[ident] = labelIPDic[ident] + [ident_label]
+    def update_labelDic_with_IPs(self, node, ident, label, ident_label):
+        ## update labelDic
+        if node not in self.labelDic:
+            self.labelDic[node] = {label: [ident]}
+        else:
+            if (label in self.labelDic[node]) and (ident not in self.labelDic[node][label]):
+                self.labelDic[node][label].append(ident)
+            else:
+                self.labelDic[node][label] = [ident]
 
-            db.close()
-            file_num += 1
+        ## update sourceDic with labels for each identifier (IP)
+        if ident not in self.sourceDic:
+            self.sourceDic[ident] = [ident_label]
+        elif ident in self.sourceDic and ident_label not in self.sourceDic[ident]:
+            self.sourceDic[ident] = self.sourceDic[ident] + [ident_label]
+    
+    def update_labelDic(self, node, label):
+        if node not in self.labelDic:
+            self.labelDic[node] = [label]
+        else:
+            if label not in self.labelDic[node]:
+                self.labelDic[node].append(label)
 
-        sourceDic = {ip:"+".join(labelIPDic[ip])+"_"+id_name for ip in labelIPDic.keys()}
+    def find_unique_templatized_cmds(self, args, templates, temporal):
+        cmdTemplateDic = {}
+        first_cmds = []
+        templatized_cmds = []
 
-        return cmdIPsDic,sourceDic
+        if temporal:
+            to_remove = []
+            to_add = []
+
+        # use one command as representative
+        for template,cmds in templates.template2cmd.items():
+            all_cmds = cmds
+            first_cmd = cmds[0]
+            cmds = cmds[1:]
+            
+            if args.id_name != '': ## if cmd not found
+                if first_cmd not in self.labelDic:
+                    for i in range(len(cmds)):
+                        if cmds[i] in self.labelDic:
+                            first_cmd = cmds[i]
+                            cmds = cmds[i+1:]
+                            break
+
+            cmdTemplateDic[first_cmd] = cmds
+
+            first_cmds = first_cmds + [first_cmd]
+            templatized_cmds = templatized_cmds + [cmds]
+
+            ## if doing temporal analysis and template is a new template, need to update label and add 'new'
+            if temporal:
+                labels2cmds = self.find_labels2cmds(all_cmds, args)
+                # if cmdIPsDic:
+                #     labels2cmds = find_labelCmds(cmdIPsDic, all_cmds, 'ip')
+                # else:
+                #     labels2cmds = find_labelCmds(labelDic, all_cmds, 'label')
+                for label,cmds in labels2cmds.items():
+                    if 'new_' not in label and template in templates.new_templates:
+                        new_label = 'new_'+label ## add new to label to indicate new template
+                        to_remove.append((cmds,label))
+                        if args.id_name != '':
+                            ips = [ips for cmd in cmds for ips in self.labelDic[cmd][label]]
+                        else:
+                            ips = None
+                        to_add.append((cmds, new_label, ips))
+                    elif 'new_' in label and template not in templates.new_templates: ## if cmd new, but template is old >> remove 'new_' from label
+                        new_label = label.replace('new_','')
+                        to_remove.append((cmds,label))
+                        if args.id_name != '':
+                            ips = [ips for cmd in cmds for ips in self.labelDic[cmd][label]]
+                        else:
+
+                            ips = None
+                        to_add.append((cmds, new_label, ips))
+
+        if temporal:
+            self.remove_add_labels(to_remove, to_add, args)
+
+        # only keep 1st command of templatized commands as an example
+        templatized_cmds = [cmd for cmd in templatized_cmds if cmd not in first_cmds]
+        unique_cmds = [x for x in self.unique_cmds if x not in templatized_cmds]
+
+        for cmd_key,cmds in cmdTemplateDic.items():
+            if cmd_key not in self.labelDic:
+                print(cmd_key)
+            for cmd in cmds:
+                if cmd not in self.labelDic:
+                ## if (cmdIPsDic and cmd not in cmdIPsDic) or (labelDic and cmd not in labelDic):
+                    cmdTemplateDic[cmd_key].remove(cmd)
+        
+        self.update_labelDic_templatized_cmds(cmdTemplateDic, args)
+        self.unique_cmds = list(self.labelDic.keys())
+    
+    def find_labels2cmds(self, cmds, args):
+        ## return {label1: [cmd1, cmd2, cmd3], label2: [cmd4, cmd5, cmd6]}
+        labels2cmds = {}
+
+        for cmd in cmds:
+            if args.id_name != '':
+                labels = list(self.labelDic[cmd].keys())
+            else:
+                labels = self.labelDic[cmd]
+            for label in labels:
+                if label not in labels2cmds:
+                    labels2cmds[label] = [cmd]
+                else:
+                    labels2cmds[label] = labels2cmds[label] + [cmd]
+        
+        return labels2cmds
+    
+    def remove_add_labels(self, to_remove, to_add, args):
+        for cmds,label in to_remove:
+            for cmd in cmds:
+                if args.id_name != '':
+                    self.labelDic[cmd].pop(label)
+                else:
+                    self.labelDic[cmd].remove(label)
+        for cmds,label,value in to_add:
+            for cmd in cmds:
+                if args.id_name != '':
+                    self.labelDic[cmd][label] = value
+                else:
+                    self.labelDic[cmd] = self.labelDic[cmd]+[label]
+    
+    def update_labelDic_templatized_cmds(self, cmdTemplateDic, args):
+        template_labelDic = {}
+        
+        for cmd in cmdTemplateDic: ## for every template
+            if args.id_name != '':
+                labels = self.labelDic[cmd].keys()
+                IPsDic = {}
+
+                for label in labels:
+                    IPs = [self.labelDic[cmd][label]] + [self.labelDic[cmds][label] for cmds in cmdTemplateDic[cmd] if label in self.labelDic[cmds]]
+                    IPs = [ip for lst in IPs for ip in lst]
+                    IPsDic[label] = IPs
+
+                template_labelDic[cmd] = IPsDic
+            else:
+                labels = [self.labelDic[cmd]] + [self.labelDic[cmds] for cmds in cmdTemplateDic[cmd]]
+                labels = list(set([label for lst in labels for label in lst]))
+                template_labelDic[cmd] = labels
+        
+        updated_labelDic = self.labelDic.copy()
+        for cmd in template_labelDic:
+            updated_labelDic[cmd] = template_labelDic[cmd]
+            for cmds in cmdTemplateDic[cmd]:
+                if cmds in updated_labelDic:
+                    del updated_labelDic[cmds] ## only keep first representative command
+    
+        self.labelDic = updated_labelDic
