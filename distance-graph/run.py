@@ -197,22 +197,28 @@ def get_info2(args, cmd2template):
                 cmd2templateCount = data.remap_dic(cmd2templateCount, data.cmd_to_old_label, 'cmd')
             #     got_unique_cmds = True
     
-    if data.got_unique_cmds == False:
-        cmdToArray = {cmd[2:-2]:cmd for cmd in unique_cmds}
-        unique_cmds = [cmd[2:-2] for cmd in unique_cmds]
+    data.get_unique_cmds()
+    # if data.got_unique_cmds == False:
+    #     cmdToArray = {cmd[2:-2]:cmd for cmd in unique_cmds}
+    #     unique_cmds = [cmd[2:-2] for cmd in unique_cmds]
 
     # cmdToArray = {cmd[2:-2]:cmd for cmd in unique_cmds}
     # unique_cmds = [cmd[2:-2] for cmd in unique_cmds]
     
-    distDic = get_distances(unique_cmds)
-    weightDic = get_weights(distDic)
+    data.calculate_weights()
+    weightDic = data.weightDic
+    # distDic = get_distances(unique_cmds)
+    # weightDic = get_weights(distDic)
 
-    if cmdIPsDic:
-        sourceDic.update({cmd:"+".join(list(cmdIPsDic[cmdToArray[cmd]].keys()))+"_"+args.node_name for cmd in unique_cmds})
-    else:
-        sourceDic = {cmd:"+".join(labelDic[cmdToArray[cmd]])+"_"+args.node_name for cmd in unique_cmds}
+    data.update_source_dic(args)
+    sourceDic = data.sourceDic
 
-    return weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2template,templates,cmd2templateCount,old_templates
+    # if cmdIPsDic:
+    #     sourceDic.update({cmd:"+".join(list(cmdIPsDic[cmdToArray[cmd]].keys()))+"_"+args.node_name for cmd in unique_cmds})
+    # else:
+    #     sourceDic = {cmd:"+".join(labelDic[cmdToArray[cmd]])+"_"+args.node_name for cmd in unique_cmds}
+
+    return weightDic,cmdIPsDic,sourceDic,data.cmdToArray,cmd2template,templates,cmd2templateCount,old_templates
 
 
 def get_info(file_args, output_names, cmd2template, args):
