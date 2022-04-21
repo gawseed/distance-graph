@@ -147,7 +147,7 @@ def get_info2(args, cmd2template):
         labelDic = data.labelDic
         cmdIPsDic = None
 
-    got_unique_cmds = False
+    # got_unique_cmds = False
 
     if cmd2template:
         data.find_unique_templatized_cmds(args, cmd2template, temporal)
@@ -172,7 +172,7 @@ def get_info2(args, cmd2template):
             #         unique_cmds2.append(cmd)
             
             # unique_cmds = unique_cmds2
-            data.get_template_nodes(templates_class)
+            data.get_template_nodes(templates_class, args)
             unique_cmds = data.unique_cmds
 
             templates_class.calculate_template_counts(data.df, args.node_name, unique_cmds)
@@ -183,21 +183,21 @@ def get_info2(args, cmd2template):
             # cmd2templateCount = map_cmd2templateCount(cmd2template,templateCounts,unique_cmds)
 
             if args.args.labels:
-                labels = pickle.load(open(args.args.labels,"rb"))
-                unique_cmds,cmd_to_old_label = update_representativeCmd(unique_cmds,labels,cmd2template,templates)
-                cmdToArray = {cmd[2:-2]:cmd for cmd in unique_cmds}
-                unique_cmds = [cmd[2:-2] for cmd in unique_cmds]
+            #     labels = pickle.load(open(args.args.labels,"rb"))
+            #     unique_cmds,cmd_to_old_label = update_representativeCmd(unique_cmds,labels,cmd2template,templates)
+            #     cmdToArray = {cmd[2:-2]:cmd for cmd in unique_cmds}
+            #     unique_cmds = [cmd[2:-2] for cmd in unique_cmds]
 
-                if cmdIPsDic:
-                    cmdIPsDic = remap_dic(cmdIPsDic,cmd_to_old_label)
-                elif labelDic:
-                    labelDic = remap_dic(labelDic,cmd_to_old_label)
+            #     if cmdIPsDic:
+            #         cmdIPsDic = remap_dic(cmdIPsDic,cmd_to_old_label)
+            #     elif labelDic:
+            #         labelDic = remap_dic(labelDic,cmd_to_old_label)
 
-                cmd2templateCount = remap_dic(cmd2templateCount,cmd_to_old_label,'cmd')
-                
-                got_unique_cmds = True
+            #     cmd2templateCount = remap_dic(cmd2templateCount,cmd_to_old_label,'cmd')
+                cmd2templateCount = data.remap_dic(cmd2templateCount, data.cmd_to_old_label, 'cmd')
+            #     got_unique_cmds = True
     
-    if got_unique_cmds == False:
+    if data.got_unique_cmds == False:
         cmdToArray = {cmd[2:-2]:cmd for cmd in unique_cmds}
         unique_cmds = [cmd[2:-2] for cmd in unique_cmds]
 

@@ -1,4 +1,5 @@
 import pandas as pd
+import pickle
 import pyfsdb
 from tools.arguments import FileArguments
 
@@ -11,6 +12,8 @@ class Data():
         self.labelDic = {}
         self.sourceDic = {}
         self.weightDic = {}
+        self.cmd_to_old_label = {}
+        self.got_unique_cmds = False
 
         self.__init_dataframe(args)
         self.find_unique_commands(args)
@@ -252,9 +255,49 @@ class Data():
     
         self.labelDic = updated_labelDic
 
-    def get_template_nodes(self, templates):
+    def get_template_nodes(self, templates, args):
         unique_cmds = []
         for cmd in self.unique_cmds:
             if (cmd in [cmd for lst in templates.template2cmd.values() for cmd in lst]):
                 unique_cmds.append(cmd)
         self.unique_cmds = unique_cmds
+
+        ## if label file given
+        if args.args.labels:
+            labels = pickle.load(open(args.args.labels,"rb"))
+            self.update_representative_cmd(labels, templates)
+    
+    def update_representative_cmd(self, labels, templates):
+        labeled_cmds = labels.keys()
+        unique_cmds2 = [cmd[2:-2] for cmd in self.unique_cmds]
+        change_cmds = {}
+
+        i = 0
+        for cmd in unique_cmds2:
+            template = templates.cmd2template[cmd]
+            temp_cmds = [temp_cmd[2:-2] for temp_cmd in templates.template2cmd[template]]
+
+            for labeled_cmd in labeled_cmds:
+                if labeled_cmd in temp_cmds and cmd != labeled_cmd:
+                    change_cmds[cmd] = labeled_cmd
+                    break
+            
+            i += 1
+
+        self.unique_cmds = [str([change_cmds[cmd[2:-2]]]) if cmd[2:-2] in change_cmds else cmd for cmd in self.unique_cmds]
+        self.cmd_to_old_label = change_cmds
+        self.labelDic = self.remap_dic(self.labelDic, self.cmd_to_old_label)
+        self.got_unique_cmds = True
+
+    def remap_dic(self, dic, cmd_to_old_label, keys='array'):
+        if keys == 'array':
+            for cmd,old_label in cmd_to_old_label.items():
+                cmd = str([cmd])
+                old_label = str([old_label])
+                dic[old_label] = dic[cmd]
+                dic.pop(cmd)
+        else:
+            for cmd,old_label in cmd_to_old_label.items():
+                dic[old_label] = dic[cmd]
+                dic.pop(cmd)
+        return dic
