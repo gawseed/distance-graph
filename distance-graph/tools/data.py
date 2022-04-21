@@ -1,5 +1,7 @@
 import pandas as pd
 import pickle
+import itertools
+import Levenshtein
 import pyfsdb
 from tools.arguments import FileArguments
 
@@ -11,9 +13,11 @@ class Data():
         self.cmdIPsDic = {}
         self.labelDic = {}
         self.sourceDic = {}
+        self.distDic = {}
         self.weightDic = {}
         self.cmd_to_old_label = {}
         self.got_unique_cmds = False
+        self.cmdToArray = {}
 
         self.__init_dataframe(args)
         self.find_unique_commands(args)
@@ -266,6 +270,9 @@ class Data():
         if args.args.labels:
             labels = pickle.load(open(args.args.labels,"rb"))
             self.update_representative_cmd(labels, templates)
+            self.unique_cmds = [cmd[2:-2] for cmd in self.unique_cmds]
+            self.cmdToArray = {cmd[2:-2]:cmd for cmd in self.unique_cmds}
+            self.got_unique_cmds = True
     
     def update_representative_cmd(self, labels, templates):
         labeled_cmds = labels.keys()
@@ -287,7 +294,6 @@ class Data():
         self.unique_cmds = [str([change_cmds[cmd[2:-2]]]) if cmd[2:-2] in change_cmds else cmd for cmd in self.unique_cmds]
         self.cmd_to_old_label = change_cmds
         self.labelDic = self.remap_dic(self.labelDic, self.cmd_to_old_label)
-        self.got_unique_cmds = True
 
     def remap_dic(self, dic, cmd_to_old_label, keys='array'):
         if keys == 'array':
@@ -301,3 +307,49 @@ class Data():
                 dic[old_label] = dic[cmd]
                 dic.pop(cmd)
         return dic
+    
+    def get_unique_cmds(self):
+        if self.got_unique_cmds == False:
+            self.cmdToArray = {cmd[2:-2]:cmd for cmd in self.unique_cmds}
+            self.unique_cmds = [cmd[2:-2] for cmd in self.unique_cmds]
+
+    def calculate_weights(self):
+        self.distDic = self.calulate_Levenshtein_distance()
+        distances = sorted(list(set(self.distDic.values())))
+
+        weights = {}
+        maxWeight = max(distances)
+
+        for i in range(len(distances)):
+            if i==0:
+                weights[distances[i]] = maxWeight
+                weight = maxWeight
+            else:
+                diff = distances[i]-distances[i-1]
+                weights[distances[i]] = weight-diff
+                weight = weight-diff
+        
+        weightDic = {}
+        for pair,dist in self.distDic.items():
+            weightDic[pair] = weights[dist]
+        self.weightDic = weightDic
+
+    def calulate_Levenshtein_distance(self):
+        cmdCombos = list(itertools.combinations(self.unique_cmds,2))
+
+        distDic = {}
+
+        for combo in cmdCombos:
+            cmd1, cmd2 = combo
+            length = len(cmd1)+len(cmd2)
+            distDic[combo] = Levenshtein.distance(cmd1, cmd2)/length
+        
+        return distDic
+    
+    def update_source_dic(self, args):
+        if args.id_name != '':
+            self.sourceDic.update({cmd:"+".join(list(self.labelDic[self.cmdToArray[cmd]].keys()))+"_"+args.node_name for cmd in self.unique_cmds})
+        else:
+            self.sourceDic = {cmd:"+".join(self.labelDic[self.cmdToArray[cmd]])+"_"+args.node_name for cmd in self.unique_cmds}
+
+
