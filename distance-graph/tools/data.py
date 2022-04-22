@@ -104,6 +104,9 @@ class Data():
                     self.update_labelDic_with_IPs(node, ident, label, ident_label)
                 else:
                     self.update_labelDic(node, label)
+            
+            db.close()
+            file_num += 1
 
     def update_labelDic_with_IPs(self, node, ident, label, ident_label):
         ## update labelDic
@@ -159,6 +162,7 @@ class Data():
             ## if doing temporal analysis and template is a new template, need to update label and add 'new'
             if temporal:
                 labels2cmds = self.find_labels2cmds(all_cmds, args)
+                
                 # if cmdIPsDic:
                 #     labels2cmds = find_labelCmds(cmdIPsDic, all_cmds, 'ip')
                 # else:
@@ -190,8 +194,6 @@ class Data():
         unique_cmds = [x for x in self.unique_cmds if x not in templatized_cmds]
 
         for cmd_key,cmds in cmdTemplateDic.items():
-            if cmd_key not in self.labelDic:
-                print(cmd_key)
             for cmd in cmds:
                 if cmd not in self.labelDic:
                 ## if (cmdIPsDic and cmd not in cmdIPsDic) or (labelDic and cmd not in labelDic):
@@ -265,16 +267,16 @@ class Data():
             if (cmd in [cmd for lst in templates.template2cmd.values() for cmd in lst]):
                 unique_cmds.append(cmd)
         self.unique_cmds = unique_cmds
-
         ## if label file given
-        if args.args.labels:
-            labels = pickle.load(open(args.args.labels,"rb"))
-            self.update_representative_cmd(labels, templates)
-            self.unique_cmds = [cmd[2:-2] for cmd in self.unique_cmds]
-            self.cmdToArray = {cmd[2:-2]:cmd for cmd in self.unique_cmds}
-            self.got_unique_cmds = True
+        # if args.args.labels:
+        #     labels = pickle.load(open(args.args.labels,"rb"))
+        #     self.update_representative_cmd(labels, templates)
+        #     self.unique_cmds = [cmd[2:-2] for cmd in self.unique_cmds]
+        #     self.cmdToArray = {cmd[2:-2]:cmd for cmd in self.unique_cmds}
+        #     self.got_unique_cmds = True
     
     def update_representative_cmd(self, labels, templates):
+        ## if label file given
         labeled_cmds = labels.keys()
         unique_cmds2 = [cmd[2:-2] for cmd in self.unique_cmds]
         change_cmds = {}
@@ -295,6 +297,10 @@ class Data():
         self.cmd_to_old_label = change_cmds
         self.labelDic = self.remap_dic(self.labelDic, self.cmd_to_old_label)
 
+        self.cmdToArray = {cmd[2:-2]:cmd for cmd in self.unique_cmds}
+        self.unique_cmds = [cmd[2:-2] for cmd in self.unique_cmds]
+        self.got_unique_cmds = True
+
     def remap_dic(self, dic, cmd_to_old_label, keys='array'):
         if keys == 'array':
             for cmd,old_label in cmd_to_old_label.items():
@@ -310,6 +316,7 @@ class Data():
     
     def get_unique_cmds(self):
         if self.got_unique_cmds == False:
+            print('TEST')
             self.cmdToArray = {cmd[2:-2]:cmd for cmd in self.unique_cmds}
             self.unique_cmds = [cmd[2:-2] for cmd in self.unique_cmds]
 
