@@ -183,6 +183,8 @@ def get_info2(args, cmd2template):
             # cmd2templateCount = map_cmd2templateCount(cmd2template,templateCounts,unique_cmds)
 
             if args.args.labels:
+                labels = pickle.load(open(args.args.labels,"rb"))
+                data.update_representative_cmd(labels,templates_class)
             #     labels = pickle.load(open(args.args.labels,"rb"))
             #     unique_cmds,cmd_to_old_label = update_representativeCmd(unique_cmds,labels,cmd2template,templates)
             #     cmdToArray = {cmd[2:-2]:cmd for cmd in unique_cmds}
