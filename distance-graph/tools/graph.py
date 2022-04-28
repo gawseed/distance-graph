@@ -69,8 +69,28 @@ class NetworkGraph():
         
         return topK_edges
 
-    def build_graph(self):
+    def build_graph(self, args, data):
         self.G.add_weighted_edges_from(sorted(self.weighted_edges))
+
+        if args.id_name != '':
+            self.add_IP_nodes(data)
+
+    def add_IP_nodes(self, data):
+        nodes = list(self.G.nodes())
+
+        for node in nodes:
+            cmd = data.cmdToArray[node]
+            ips = self.get_IPs(cmd,data.cmdIPsDic)
+            edges = [(node,ip) for ip in ips]
+            self.G.add_edges_from(edges)
+
+    def find_IPs(cmd,dic):
+        ips = []
+
+        for label,label_ips in dic[cmd].items():
+            ips = ips + label_ips
+        
+        return list(set(ips))
 
     def generate_labels(self, args, templates):
         if (args.args.labels):
@@ -113,3 +133,21 @@ class NetworkGraph():
             i += 1
         
         return labels
+
+    def find_clusters(self):
+        ip_regex = r'^\d+\.\d+\.\d+\.\d+$'
+        components = sorted([sorted(list(comp)) for comp in list(nx.connected_components(self.G))])
+        
+        clusters = {}
+        i=0
+        for comp in components:
+            cluster = [node for node in comp if not re.search(ip_regex,node)]
+            clusters[i] = cluster
+            i+=1
+
+        cmdToCluster = {}
+        for cluster,commands in clusters.items():
+            ids = {cmd:cluster for cmd in commands}
+            cmdToCluster.update(ids)
+        
+        self.clusters = cmdToCluster
