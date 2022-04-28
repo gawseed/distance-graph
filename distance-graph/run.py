@@ -221,7 +221,7 @@ def get_info2(args, cmd2template):
     # else:
     #     sourceDic = {cmd:"+".join(labelDic[cmdToArray[cmd]])+"_"+args.node_name for cmd in unique_cmds}
 
-    return weightDic,cmdIPsDic,sourceDic,data.cmdToArray,cmd2template,templates,cmd2templateCount,old_templates
+    return data,weightDic,cmdIPsDic,sourceDic,data.cmdToArray,cmd2template,templates,cmd2templateCount,old_templates
 
 
 def get_info(file_args, output_names, cmd2template, args):
@@ -860,6 +860,60 @@ def get_weights(distDic):
 
     return weightDic
 
+def draw_networkx2(args,data,cmdIPsDic,sourceDic,cmdToArray,cmd2templates,cmd2templateCount,old_templates):
+    """ Finds the weighted edges and plots the NetworkX graph. Obtains labels for nodes and cluster IDs for connected nodes
+    Input:
+        args (argument parser) - parser of command line arguments,
+        weightDic (dict) - weights for each pair of commands, cmdIPsDic (dict) - maps command to a dictionary that has source and IPs that ran the command,
+        cmdIPsDic (dict) - maps command to dict that contains source and IP addresses
+        sourceDic (dict) - maps command to source label, cmdToArray (dict) - maps command to array style command,
+        cmdToArray (dict) - maps command (str) to array style command (str)
+    Output:
+        G (NetworkX graph) - labeled graph with weighted edges,
+        weighted_edges (list) - list of tuples containing command pair and weight,
+        labels (dict) - maps command node to integer,
+        clusters (dict) - key: command node (str) / value: cluster ID (int)
+    """
+    # threshold = args.args.edge_weight
+    # pos = args.args.position
+    # output_file = args.args.output_file[0]
+    # figsize = tuple([args.args.width,args.args.height])
+    # node_name, label_name, id_name = get_outputNames(output_names)
+
+    # edgeweight = [tuple(list(k)+[v]) for k,v in weightDic.items()]
+
+    # if args.args.top_k:
+    #     k = args.args.top_k
+    #     weighted_edges = get_topK_edges(k, edgeweight, k_edges=args.args.top_k_edges)
+    # else:
+    #     weighted_edges = [x for x in edgeweight if x[2] > threshold]
+
+    # weighted_edges = sorted(weighted_edges)
+    networkgraph = NetworkGraph(args,data)
+    weighted_edges = networkgraph.weighted_edges
+    G = nx.Graph()
+    G.add_weighted_edges_from(sorted(weighted_edges))
+
+    if (args.args.labels):
+        labels = pickle.load(open(args.args.labels,"rb"))
+        labels = add_newLabels(G,labels,cmd2templates)
+    else:
+        labels = get_numberNodes(G)
+
+    clusters = get_clusters(G)
+
+    if cmdIPsDic:
+        add_IPnodes(G,cmdToArray,cmdIPsDic)
+
+    nodeTypeDic,colorslist = set_nodeColors(G,sourceDic,args.id_name)
+
+    if (args.args.temporal):
+        pos = plot_temporal_networkx(G,networkgraph.pos,networkgraph.output_file,labels,colorslist,nodeTypeDic,args.id_name,cmd2templateCount,cmd2templates,old_templates,figsize=networkgraph.figsize,font_size=args.args.font_size,node_size=args.args.node_size)
+    else:
+        pos = plot_networkx(G,networkgraph.pos,networkgraph.output_file,labels,colorslist,nodeTypeDic,args.id_name,cmd2templateCount,figsize=networkgraph.figsize,font_size=args.args.font_size,node_size=args.args.node_size)
+
+    return G,weighted_edges,labels,clusters,pos
+
 def draw_networkx(args,output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2templates,cmd2templateCount,old_templates):
     """ Finds the weighted edges and plots the NetworkX graph. Obtains labels for nodes and cluster IDs for connected nodes
     Input:
@@ -1320,9 +1374,10 @@ def main():
     else:
         cmd2template = None
 
-    weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2template,templates,cmd2templateCount,old_templates = get_info2(args, cmd2template)
+    data,weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2template,templates,cmd2templateCount,old_templates = get_info2(args, cmd2template)
     # weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2template,templates,cmd2templateCount,old_templates = get_info(file_args, output_names, cmd2template, args)
-    G,weighted_edges,labels,clusters,pos = draw_networkx(args,args.output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2template,cmd2templateCount,old_templates)
+    # G,weighted_edges,labels,clusters,pos = draw_networkx(args,args.output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2template,cmd2templateCount,old_templates)
+    G,weighted_edges,labels,clusters,pos = draw_networkx2(args,data,cmdIPsDic,sourceDic,cmdToArray,cmd2template,cmd2templateCount,old_templates)
 
     ## save NetworkX graph position file to pickle file
     if (args.args.position_file):

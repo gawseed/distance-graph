@@ -25,6 +25,7 @@ class NetworkGraph():
             self.weighted_edges = self.get_topK_edges(k, edgeweight, k_edges=args.args.top_k_edges)
         else:
             self.weighted_edges = [x for x in edgeweight if x[2] > self.threshold]
+        self.weighted_edges = sorted(self.weighted_edges)
 
     def get_topK_edges(self, k, edgeweight, k_edges):
         topK = {}
