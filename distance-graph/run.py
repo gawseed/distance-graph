@@ -3,6 +3,7 @@ from tools.arguments import *
 from tools.templatizer import *
 from tools.templates import Templates
 from tools.data import Data
+from tools.graph import NetworkGraph
 import pyfsdb
 import pandas as pd
 # import os
