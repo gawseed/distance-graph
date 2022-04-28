@@ -316,7 +316,6 @@ class Data():
     
     def get_unique_cmds(self):
         if self.got_unique_cmds == False:
-            print('TEST')
             self.cmdToArray = {cmd[2:-2]:cmd for cmd in self.unique_cmds}
             self.unique_cmds = [cmd[2:-2] for cmd in self.unique_cmds]
 
