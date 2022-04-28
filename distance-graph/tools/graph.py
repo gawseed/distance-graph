@@ -74,6 +74,8 @@ class NetworkGraph():
 
         if args.id_name != '':
             self.add_IP_nodes(data)
+        
+        self.assign_node_colors(data,args)
 
     def add_IP_nodes(self, data):
         nodes = list(self.G.nodes())
@@ -91,6 +93,54 @@ class NetworkGraph():
             ips = ips + label_ips
         
         return list(set(ips))
+    
+    def assign_node_colors(self,data,args):
+        nx.set_node_attributes(G,name="source",values=data.sourceDic)
+        sources = set(sorted(nx.get_node_attributes(G,"source").values()))
+
+        if args.id_name != '':
+            id_labels = [label for label in sources if args.id_name in label]
+        else:
+            id_labels = []
+
+        source_labels = [label for label in sources if label not in id_labels]
+        types = sorted(source_labels) + sorted(id_labels)
+
+        self.colorslist = self.get_colors(types)
+        self.nodeTypeDic = self.create_nodeTypeDic(types,data.sourceDic)
+
+    def get_colors(types):
+        sourceToColor = {}
+        colors_to_use = []
+        colorslist = ["b","c","r","tab:orange","y","lime","tab:pink","g","tab:brown","tab:purple"]
+
+        for type in types:
+            source = type.split('_')[0]
+
+            if source not in sourceToColor:
+                if 'new' in source: ## make new nodes red color
+                    if "r" in colorslist:
+                        sourceToColor[source] = 'r'
+                        colorslist.pop(colorslist.index('r'))
+                    else:
+                        sourceToColor[source] = 'lime'
+                        colorslist.pop(colorslist.index('lime'))
+                else:
+                    sourceToColor[source] = colorslist[0]
+                    colorslist = colorslist[1:]
+            
+            colors_to_use.append(sourceToColor[source])
+        
+        return colors_to_use
+    
+    def create_nodeTypeDic(self,types,sourceDic):
+        nodeTypeDic = {nodetype:[] for nodetype in types}
+        
+        for node in self.G.nodes:
+            source = sourceDic[node]
+            nodeTypeDic[source] = nodeTypeDic[source]+[node]
+                
+        return nodeTypeDic
 
     def generate_labels(self, args, templates):
         if (args.args.labels):
