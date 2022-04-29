@@ -900,15 +900,19 @@ def draw_networkx2(args,data,cmdIPsDic,sourceDic,cmdToArray,cmd2templates,cmd2te
     # else:
     #     labels = get_numberNodes(G)
 
-    G = networkgraph.G
     labels = networkgraph.labels
+    clusters = networkgraph.clusters
+    nodeTypeDic = networkgraph.nodeTypeDic
+    colorslist = networkgraph.colorslist
 
-    clusters = get_clusters(G)
+    # clusters = get_clusters(G)
 
-    if cmdIPsDic:
-        add_IPnodes(G,cmdToArray,cmdIPsDic)
+    # if cmdIPsDic:
+    #     add_IPnodes(G,cmdToArray,cmdIPsDic)
 
-    nodeTypeDic,colorslist = set_nodeColors(G,sourceDic,args.id_name)
+    # nodeTypeDic,colorslist = set_nodeColors(G,sourceDic,args.id_name)
+
+    G = networkgraph.G
 
     if (args.args.temporal):
         pos = plot_temporal_networkx(G,networkgraph.pos,networkgraph.output_file,labels,colorslist,nodeTypeDic,args.id_name,cmd2templateCount,cmd2templates,old_templates,figsize=networkgraph.figsize,font_size=args.args.font_size,node_size=args.args.node_size)

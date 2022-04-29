@@ -17,7 +17,7 @@ class NetworkGraph():
         self.colorslist = []
 
         self.calculate_weighted_edges(args, data)
-        self.build_graph()
+        self.build_graph(args,data)
         self.generate_labels(args,templates)
 
     def calculate_weighted_edges(self, args, data):
@@ -71,6 +71,7 @@ class NetworkGraph():
 
     def build_graph(self, args, data):
         self.G.add_weighted_edges_from(sorted(self.weighted_edges))
+        self.find_clusters()
 
         if args.id_name != '':
             self.add_IP_nodes(data)
@@ -95,8 +96,8 @@ class NetworkGraph():
         return list(set(ips))
     
     def assign_node_colors(self,data,args):
-        nx.set_node_attributes(G,name="source",values=data.sourceDic)
-        sources = set(sorted(nx.get_node_attributes(G,"source").values()))
+        nx.set_node_attributes(self.G,name="source",values=data.sourceDic)
+        sources = set(sorted(nx.get_node_attributes(self.G,"source").values()))
 
         if args.id_name != '':
             id_labels = [label for label in sources if args.id_name in label]
@@ -109,7 +110,7 @@ class NetworkGraph():
         self.colorslist = self.get_colors(types)
         self.nodeTypeDic = self.create_nodeTypeDic(types,data.sourceDic)
 
-    def get_colors(types):
+    def get_colors(self,types):
         sourceToColor = {}
         colors_to_use = []
         colorslist = ["b","c","r","tab:orange","y","lime","tab:pink","g","tab:brown","tab:purple"]
