@@ -202,3 +202,95 @@ class NetworkGraph():
             cmdToCluster.update(ids)
         
         self.clusters = cmdToCluster
+    
+    def plot_networkx(self,args,templates):
+        node_size = args.args.node_size
+        font_size = 10
+        ip_alpha = 0.2
+        cmd_alpha = 0.2
+        edge_alpha = 0.2
+
+        fig,ax = plt.subplots(1,figsize=self.figsize)
+        if not self.pos:
+            self.pos=nx.spring_layout(self.G)
+        else:
+            self.pos=pickle.load(open(self.pos,"rb"))
+            fixed_nodes = self.pos.keys()
+            self.pos=nx.spring_layout(self.G,pos=self.pos,fixed=fixed_nodes,k=0.3)
+
+        i=0
+        handles = []
+        for nodetype in self.nodeTypeDic:
+            nodelist = self.nodeTypeDic[nodetype]
+            color = self.colorslist[i]
+            i+=1
+
+            if args.id_name and args.id_name in nodetype:
+                alpha=ip_alpha
+                nx.draw_networkx_nodes(self.G,pos=self.pos,nodelist=nodelist,ax=ax,\
+                            label=nodetype,alpha=alpha,node_size=node_size,node_shape="^",node_color=color)
+            else:
+                if 'new' in nodetype:
+                    alpha=0.4
+                else:
+                    alpha=cmd_alpha
+                    alpha = [alpha if templates.cmd2template[node] not in templates.old_templates else 0.085 for node in nodelist]
+                
+                if templates.cmd2template_count != {}:
+                    node_sizes = [templates.cmd2template_count[node] for node in nodelist]
+                    node_size_template = [int((5*node)**0.5) for node in node_sizes]
+
+                    points = nx.draw_networkx_nodes(self.G,pos=self.pos,nodelist=nodelist,ax=ax,\
+                            label=nodetype,alpha=alpha,node_size=node_size_template,node_color=color)
+                    handles.append(points.legend_elements("sizes", num=4))
+                else:
+                    nx.draw_networkx_nodes(self.G,pos=self.pos,nodelist=nodelist,ax=ax,\
+                                label=nodetype,alpha=alpha,node_size=node_size,node_color=color)
+
+        nx.draw_networkx_edges(self.G,pos=self.pos,alpha=edge_alpha)
+        nx.draw_networkx_labels(self.G,pos=self.pos,labels=self.labels,font_size=font_size)
+
+        legend = ax.legend(scatterpoints=1, markerscale=0.75)
+        for leg in legend.legendHandles:
+            leg.set_alpha(0.5)
+            leg._sizes = [250]
+        plt.gca().add_artist(legend)
+
+        if handles != []:
+            legend_handles, legend_labels = self.get_size_legend(handles)
+            legend2 = ax.legend(handles=legend_handles,labels=legend_labels,bbox_to_anchor = (1,1.15), title='command count')
+            for leg in legend2.legendHandles:
+                leg.set_alpha(0.3)
+
+        ## remove black border
+        ax.spines['top'].set_visible(False)
+        ax.spines['bottom'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['left'].set_visible(False)
+        
+        plt.savefig(args.output_file, dpi=300)
+
+    def get_size_legend(self,handles):
+        handle_points = []
+        handle_labels = []
+        regex = r'(\d+)'
+        
+        for handle in handles:
+            handle_points += handle[0]
+            handle_labels += handle[1]
+
+        handle_labels = [int(re.search(regex, handle).group(1)) for handle in handle_labels]
+        all_handles = sorted([(handle_points[i],handle_labels[i]) for i in range(len(handle_points))], key=lambda x: x[1])
+        to_keep = [min(handle_labels), max(handle_labels), all_handles[int(len(all_handles)/2)][1]]
+        all_handles = [handle for handle in all_handles if handle[1] in to_keep]
+
+        legend_handles = []
+        legend_labels = []
+        for handle in all_handles:
+            if handle[1] not in legend_labels:
+                legend_handles.append(handle[0])
+                legend_labels.append(handle[1])
+        
+        legend_labels = [int((label**2)/5) for label in legend_labels]
+        legend_labels = [f'{label:,}' for label in legend_labels]
+        return legend_handles, legend_labels
