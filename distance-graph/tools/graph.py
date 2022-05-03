@@ -268,7 +268,7 @@ class NetworkGraph():
         ax.spines['right'].set_visible(False)
         ax.spines['left'].set_visible(False)
         
-        plt.savefig(args.output_file, dpi=300)
+        plt.savefig(args.args.output_file[0], dpi=300)
 
     def get_size_legend(self,handles):
         handle_points = []
