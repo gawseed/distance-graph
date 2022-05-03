@@ -150,7 +150,7 @@ class NetworkGraph():
         else:
             self.labels = self.add_number_labels()
 
-    def add_new_labels_to_existing(self,labels,cmd2templates):
+    def add_new_labels_to_existing(self,labels,templates):
         nodes = self.G.nodes()
         num_labels = [labels[cmd]['label'] for cmd in labels]
         template2label = {labels[cmd]['template']:labels[cmd]['label'] for cmd in labels}
@@ -161,8 +161,8 @@ class NetworkGraph():
             if node in labels:
                 new_labels[node] = labels[node]['label']
             else:
-                if cmd2templates != {}:
-                    template = cmd2templates[node]
+                if templates.cmd2template != {}:
+                    template = templates.cmd2template[node]
                     if template in template2label:
                         label = template2label[template]
                         new_labels[node] = label

@@ -23,98 +23,31 @@ def get_info2(args, cmd2template):
         cmdToArray (dict) - key: command (str) / value: array style command (str)
         cmd2template (dict) - key: command (str) / value: template (tuple)
     """
-    template_nodes = args.args.template_nodes
     templates_class = cmd2template
-    temporal = args.args.temporal
-    templates = {}
-    cmd2templateCount = {}
-
     data = Data(args)
-    login_index = False
-
-    if args.id_name != '':
-        cmdIPsDic = data.labelDic
-        sourceDic = data.sourceDic
-    else:
-        labelDic = data.labelDic
-        cmdIPsDic = None
-
-    # got_unique_cmds = False
 
     if cmd2template:
-        data.find_unique_templatized_cmds(args, cmd2template, temporal)
-        unique_cmds = data.unique_cmds
-        # cmdIPsDic = None
-        labelDic = data.labelDic
-        templates = cmd2template.template2cmd
-        old_templates = cmd2template.old_templates
+        data.find_unique_templatized_cmds(args, cmd2template, args.args.temporal)
 
-        # templates = cmd2template.templates
         cmd2template = cmd2template.cmd2template
-        # if cmdIPsDic:
-        #     unique_cmds,cmdIPsDic,templates,old_templates = get_uniqueCmds(data.unique_cmds,cmdIPsDic,{},templates,temporal)
-        # else:
-        #     unique_cmds,labelDic,templates,old_templates = get_uniqueCmds(data.unique_cmds,cmdIPsDic,labelDic,templates,temporal)
 
-        if template_nodes:
-            # unique_cmds2 = []
-            # for cmd in unique_cmds:
-            #     if (cmd in [cmd for lst in templates.values() for cmd in lst]):
-            #     # if (cmd in [cmd for lst in templates[0].values() for cmd in lst]) or (cmd in [cmd for lst in templates[1].values() for cmd in lst]):
-            #         unique_cmds2.append(cmd)
-            
-            # unique_cmds = unique_cmds2
+        if args.args.template_nodes:
             data.get_template_nodes(templates_class, args)
-            unique_cmds = data.unique_cmds
-
-            templates_class.calculate_template_counts(data.df, args.node_name, unique_cmds)
-            # templateCounts = templates_class.template_counts
-            cmd2templateCount = templates_class.cmd2template_count
+            templates_class.calculate_template_counts(data.df, args.node_name, data.unique_cmds)
             
-            # templateCounts = calc_templateCount(templates,data.df,args.node_name)
-            # cmd2templateCount = map_cmd2templateCount(cmd2template,templateCounts,unique_cmds)
-
             if args.args.labels:
                 labels = pickle.load(open(args.args.labels,"rb"))
                 data.update_representative_cmd(labels,templates_class)
-            #     labels = pickle.load(open(args.args.labels,"rb"))
-            #     unique_cmds,cmd_to_old_label = update_representativeCmd(unique_cmds,labels,cmd2template,templates)
-            #     cmdToArray = {cmd[2:-2]:cmd for cmd in unique_cmds}
-            #     unique_cmds = [cmd[2:-2] for cmd in unique_cmds]
 
-            #     if cmdIPsDic:
-            #         cmdIPsDic = remap_dic(cmdIPsDic,cmd_to_old_label)
-            #     elif labelDic:
-            #         labelDic = remap_dic(labelDic,cmd_to_old_label)
-
-            #     cmd2templateCount = remap_dic(cmd2templateCount,cmd_to_old_label,'cmd')
-                cmd2templateCount = data.remap_dic(cmd2templateCount, data.cmd_to_old_label, 'cmd')
-            #     got_unique_cmds = True
+                templates_class.cmd2template_count = data.remap_dic(templates_class.cmd2template_count, data.cmd_to_old_label, 'cmd')
     
     data.get_unique_cmds()
-    # if data.got_unique_cmds == False:
-    #     cmdToArray = {cmd[2:-2]:cmd for cmd in unique_cmds}
-    #     unique_cmds = [cmd[2:-2] for cmd in unique_cmds]
-
-    # cmdToArray = {cmd[2:-2]:cmd for cmd in unique_cmds}
-    # unique_cmds = [cmd[2:-2] for cmd in unique_cmds]
-    
     data.calculate_weights()
-    weightDic = data.weightDic
-    # distDic = get_distances(unique_cmds)
-    # weightDic = get_weights(distDic)
-
     data.update_source_dic(args)
-    sourceDic = data.sourceDic
 
-    # if cmdIPsDic:
-    #     sourceDic.update({cmd:"+".join(list(cmdIPsDic[cmdToArray[cmd]].keys()))+"_"+args.node_name for cmd in unique_cmds})
-    # else:
-    #     sourceDic = {cmd:"+".join(labelDic[cmdToArray[cmd]])+"_"+args.node_name for cmd in unique_cmds}
+    return data,templates_class
 
-    return data,weightDic,cmdIPsDic,sourceDic,data.cmdToArray,cmd2template,templates,cmd2templateCount,old_templates,templates_class
-
-def draw_networkx2(args,data,cmdIPsDic,sourceDic,cmdToArray,templates,cmd2templates,cmd2templateCount,old_templates):
+def draw_networkx2(args,data,templates):
     """ Finds the weighted edges and plots the NetworkX graph. Obtains labels for nodes and cluster IDs for connected nodes
     Input:
         args (argument parser) - parser of command line arguments,
@@ -128,52 +61,14 @@ def draw_networkx2(args,data,cmdIPsDic,sourceDic,cmdToArray,templates,cmd2templa
         labels (dict) - maps command node to integer,
         clusters (dict) - key: command node (str) / value: cluster ID (int)
     """
-    # threshold = args.args.edge_weight
-    # pos = args.args.position
-    # output_file = args.args.output_file[0]
-    # figsize = tuple([args.args.width,args.args.height])
-    # node_name, label_name, id_name = get_outputNames(output_names)
-
-    # edgeweight = [tuple(list(k)+[v]) for k,v in weightDic.items()]
-
-    # if args.args.top_k:
-    #     k = args.args.top_k
-    #     weighted_edges = get_topK_edges(k, edgeweight, k_edges=args.args.top_k_edges)
-    # else:
-    #     weighted_edges = [x for x in edgeweight if x[2] > threshold]
-
-    # weighted_edges = sorted(weighted_edges)
-    networkgraph = NetworkGraph(args,data,cmd2templates)
-    #weighted_edges = networkgraph.weighted_edges
-    # G = nx.Graph()
-    # G.add_weighted_edges_from(sorted(weighted_edges))
-
-    # if (args.args.labels):
-    #     labels = pickle.load(open(args.args.labels,"rb"))
-    #     labels = add_newLabels(G,labels,cmd2templates)
-    # else:
-    #     labels = get_numberNodes(G)
+    networkgraph = NetworkGraph(args,data,templates)
 
     labels = networkgraph.labels
     clusters = networkgraph.clusters
-    nodeTypeDic = networkgraph.nodeTypeDic
-    colorslist = networkgraph.colorslist
-
-    # clusters = get_clusters(G)
-
-    # if cmdIPsDic:
-    #     add_IPnodes(G,cmdToArray,cmdIPsDic)
-
-    # nodeTypeDic,colorslist = set_nodeColors(G,sourceDic,args.id_name)
 
     G = networkgraph.G
     networkgraph.plot_networkx(args, templates)
     pos = networkgraph.pos
-
-    # if (args.args.temporal):
-    #     pos = plot_temporal_networkx(G,networkgraph.pos,networkgraph.output_file,labels,colorslist,nodeTypeDic,args.id_name,cmd2templateCount,cmd2templates,old_templates,figsize=networkgraph.figsize,font_size=args.args.font_size,node_size=args.args.node_size)
-    # else:
-    #     pos = plot_networkx(G,networkgraph.pos,networkgraph.output_file,labels,colorslist,nodeTypeDic,args.id_name,cmd2templateCount,figsize=networkgraph.figsize,font_size=args.args.font_size,node_size=args.args.node_size)
 
     return G,networkgraph.weighted_edges,labels,clusters,pos
 
@@ -202,10 +97,10 @@ def main():
     else:
         cmd2template = None
 
-    data,weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2template,templates,cmd2templateCount,old_templates,templates_class = get_info2(args, cmd2template)
+    data,templates_class = get_info2(args, cmd2template)
     # weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2template,templates,cmd2templateCount,old_templates = get_info(file_args, output_names, cmd2template, args)
     # G,weighted_edges,labels,clusters,pos = draw_networkx(args,args.output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2template,cmd2templateCount,old_templates)
-    G,weighted_edges,labels,clusters,pos = draw_networkx2(args,data,cmdIPsDic,sourceDic,cmdToArray,templates_class,cmd2template,cmd2templateCount,old_templates)
+    G,weighted_edges,labels,clusters,pos = draw_networkx2(args,data,templates_class)
 
     ## save NetworkX graph position file to pickle file
     if (args.args.position_file):
@@ -214,7 +109,7 @@ def main():
     ## save labels dict to pickle file
     if (args.args.labels_file):
         if (args.args.template_nodes):
-            output_labels = {cmd:{'label':label, 'template':cmd2template[cmd]} for cmd,label in labels.items()}
+            output_labels = {cmd:{'label':label, 'template':templates_class.cmd2template[cmd]} for cmd,label in labels.items()}
             pickle.dump(output_labels, open(args.args.labels_file, "wb"))
         else:
             output_labels = {cmd:{'label':label, 'template':"N/A"} for cmd,label in labels.items()}
@@ -230,8 +125,8 @@ def main():
                 cluster_id = clusters[cmd1]
                 num1 = labels[cmd1]
                 num2 = labels[cmd2]
-                template1 = ' '.join(cmd2template[cmd1])
-                template2 = ' '.join(cmd2template[cmd2])
+                template1 = ' '.join(templates_class.cmd2template[cmd1])
+                template2 = ' '.join(templates_class.cmd2template[cmd2])
                 outh.append([cluster_id,round(weight,3),num1,num2,cmd1,cmd2,template1,template2])
             outh.close()
         else:
@@ -250,7 +145,7 @@ def main():
             outh = pyfsdb.Fsdb(out_file=args.args.cluster_list)
             outh.out_column_names=['cluster_id','command','template']
             for cmd,cluster_id in clusters.items():
-                template = ' '.join(cmd2template[cmd])
+                template = ' '.join(templates_class.cmd2template[cmd])
                 outh.append([cluster_id,cmd,template])
             outh.close()
         else:
@@ -267,10 +162,10 @@ def main():
             outh.out_column_names=['template','command','node','label']
             template_list = []
             for cmd in clusters.keys():
-                template = ' '.join(cmd2template[cmd])
+                template = ' '.join(templates_class.cmd2template[cmd])
                 node = labels[cmd]
-                if sourceDic != {}:
-                    label = sourceDic[cmd]
+                if data.sourceDic != {}:
+                    label = data.sourceDic[cmd]
                 else:
                     label = ''
                 template_list.append([template,cmd,node,label])
@@ -287,7 +182,7 @@ def main():
             outh = pyfsdb.Fsdb(out_file=args.args.templatecmd_list)
             outh.out_column_names=['template','command']
             tc_list = []
-            for temp,cmds in templates.items():
+            for temp,cmds in templates_class.template2cmd.items():
                 template = ' '.join(temp)
                 cmds = sorted(set(cmds))
                 cmds = [cmd[2:-2] for cmd in cmds]
