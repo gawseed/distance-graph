@@ -34,15 +34,9 @@ def get_info2(args, cmd2template):
 
 def draw_networkx2(args,data,templates):
     networkgraph = NetworkGraph(args,data,templates)
-
-    labels = networkgraph.labels
-    clusters = networkgraph.clusters
-
-    G = networkgraph.G
     networkgraph.plot_networkx(args, templates)
-    pos = networkgraph.pos
 
-    return G,networkgraph.weighted_edges,labels,clusters,pos
+    return networkgraph
 
 def main():
     args = Arguments()
@@ -56,19 +50,19 @@ def main():
         cmd2template = None
 
     data,templates_class = get_info2(args, cmd2template)
-    G,weighted_edges,labels,clusters,pos = draw_networkx2(args,data,templates_class)
+    networkgraph = draw_networkx2(args,data,templates_class)
 
     ## save NetworkX graph position file to pickle file
     if (args.args.position_file):
-        pickle.dump(pos, open(args.args.position_file, "wb" ))
+        pickle.dump(networkgraph.pos, open(args.args.position_file, "wb" ))
 
     ## save labels dict to pickle file
     if (args.args.labels_file):
         if (args.args.template_nodes):
-            output_labels = {cmd:{'label':label, 'template':templates_class.cmd2template[cmd]} for cmd,label in labels.items()}
+            output_labels = {cmd:{'label':label, 'template':templates_class.cmd2template[cmd]} for cmd,label in networkgraph.labels.items()}
             pickle.dump(output_labels, open(args.args.labels_file, "wb"))
         else:
-            output_labels = {cmd:{'label':label, 'template':"N/A"} for cmd,label in labels.items()}
+            output_labels = {cmd:{'label':label, 'template':"N/A"} for cmd,label in networkgraph.labels.items()}
 
     ## create edge list to FSDB file
     if (args.args.edge_list):
@@ -76,10 +70,10 @@ def main():
             print("Graphing template nodes...")
             outh = pyfsdb.Fsdb(out_file=args.args.edge_list)
             outh.out_column_names=['cluster_id', 'weight', 'node1_id', 'node2_id', 'node1', 'node2', 'template1', 'template2']
-            for cmd1,cmd2,weight in weighted_edges:
-                cluster_id = clusters[cmd1]
-                num1 = labels[cmd1]
-                num2 = labels[cmd2]
+            for cmd1,cmd2,weight in networkgraph.weighted_edges:
+                cluster_id = networkgraph.clusters[cmd1]
+                num1 = networkgraph.labels[cmd1]
+                num2 = networkgraph.labels[cmd2]
                 template1 = ' '.join(templates_class.cmd2template[cmd1])
                 template2 = ' '.join(templates_class.cmd2template[cmd2])
                 outh.append([cluster_id,round(weight,3),num1,num2,cmd1,cmd2,template1,template2])
@@ -87,10 +81,10 @@ def main():
         else:
             outh = pyfsdb.Fsdb(out_file=args.args.edge_list)
             outh.out_column_names=['cluster_id', 'node1_id', 'node2_id', 'node1', 'node2', 'weight']
-            for cmd1,cmd2,weight in weighted_edges:
-                cluster_id = clusters[cmd1]
-                num1 = labels[cmd1]
-                num2 = labels[cmd2]
+            for cmd1,cmd2,weight in networkgraph.weighted_edges:
+                cluster_id = networkgraph.clusters[cmd1]
+                num1 = networkgraph.labels[cmd1]
+                num2 = networkgraph.labels[cmd2]
                 outh.append([cluster_id,num1,num2,cmd1,cmd2,round(weight,3)])
             outh.close()
 
@@ -99,14 +93,14 @@ def main():
         if (args.args.template_nodes): ## if template nodes are being graphed, produce edge list that includes templates
             outh = pyfsdb.Fsdb(out_file=args.args.cluster_list)
             outh.out_column_names=['cluster_id','command','template']
-            for cmd,cluster_id in clusters.items():
+            for cmd,cluster_id in networkgraph.clusters.items():
                 template = ' '.join(templates_class.cmd2template[cmd])
                 outh.append([cluster_id,cmd,template])
             outh.close()
         else:
             outh = pyfsdb.Fsdb(out_file=args.cluster_list)
             outh.out_column_names=['cluster_id','command']
-            for cmd,cluster_id in clusters.items():
+            for cmd,cluster_id in networkgraph.clusters.items():
                 outh.append([cluster_id,cmd])
             outh.close()
 
@@ -116,9 +110,9 @@ def main():
             outh = pyfsdb.Fsdb(out_file=args.args.template_list)
             outh.out_column_names=['template','command','node','label']
             template_list = []
-            for cmd in clusters.keys():
+            for cmd in networkgraph.clusters.keys():
                 template = ' '.join(templates_class.cmd2template[cmd])
-                node = labels[cmd]
+                node = networkgraph.labels[cmd]
                 if data.sourceDic != {}:
                     label = data.sourceDic[cmd]
                 else:
