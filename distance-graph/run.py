@@ -1,22 +1,11 @@
-# from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
 from tools.arguments import *
 from tools.templatizer import *
 from tools.templates import Templates
 from tools.data import Data
 from tools.graph import NetworkGraph
 import pyfsdb
-import pandas as pd
-# import os
-# import json
-# import collections
-import tqdm
-import matplotlib.pyplot as plt
-import networkx as nx
-import Levenshtein
-import itertools
-import re
 import pickle
-import numpy as np
+
 
 def get_info2(args, cmd2template):
     """ Cleans and transforms input data according to user arguments. Finds weights and labels of nodes.
