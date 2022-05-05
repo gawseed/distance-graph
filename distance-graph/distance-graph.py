@@ -981,6 +981,7 @@ def draw_networkx(args,output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd
     else:
         weighted_edges = [x for x in edgeweight if x[2] > threshold]
 
+    weighted_edges = sorted(weighted_edges)
     G = nx.Graph()
     G.add_weighted_edges_from(weighted_edges)
 
@@ -1085,7 +1086,7 @@ def get_numberNodes(G):
     Output:
         labels (dict) - maps node to labeled number
     """
-    nodes = G.nodes()
+    nodes = sorted(G.nodes())
     labels = {}
 
     i=0
@@ -1371,7 +1372,7 @@ def get_clusters(G):
         cmdToCluster (dict) - key: command node (str) / value: cluster ID (int)
     """
     ip_regex = r'^\d+\.\d+\.\d+\.\d+$'
-    components = [list(comp) for comp in list(nx.connected_components(G))]
+    components = sorted([sorted(list(comp)) for comp in list(nx.connected_components(G))])
     
     clusters = {}
     i=0
