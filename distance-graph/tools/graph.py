@@ -83,11 +83,11 @@ class NetworkGraph():
 
         for node in nodes:
             cmd = data.cmdToArray[node]
-            ips = self.get_IPs(cmd,data.cmdIPsDic)
+            ips = self.find_IPs(cmd,data.labelDic)
             edges = [(node,ip) for ip in ips]
             self.G.add_edges_from(edges)
 
-    def find_IPs(cmd,dic):
+    def find_IPs(self,cmd,dic):
         ips = []
 
         for label,label_ips in dic[cmd].items():
@@ -233,8 +233,9 @@ class NetworkGraph():
                 if 'new' in nodetype:
                     alpha=0.4
                 else:
-                    alpha=cmd_alpha
-                    alpha = [alpha if templates.cmd2template[node] not in templates.old_templates else 0.085 for node in nodelist]
+                    alpha = cmd_alpha
+                    if args.args.temporal:
+                        alpha = [alpha if templates.cmd2template[node] not in templates.old_templates else 0.085 for node in nodelist]
                 
                 if templates.cmd2template_count != {}:
                     node_sizes = [templates.cmd2template_count[node] for node in nodelist]
