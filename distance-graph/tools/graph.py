@@ -9,6 +9,8 @@ class NetworkGraph():
         self.pos = args.args.position
         self.output_file = args.args.output_file[0]
         self.figsize = tuple([args.args.width,args.args.height])
+        self.node_size = args.args.node_size
+        self.font_size = args.args.font_size
         self.weighted_edges = []
         self.G = nx.Graph()
         self.labels = {}
@@ -204,8 +206,6 @@ class NetworkGraph():
         self.clusters = cmdToCluster
     
     def plot_networkx(self,args,templates):
-        node_size = args.args.node_size
-        font_size = 10
         ip_alpha = 0.2
         cmd_alpha = 0.2
         edge_alpha = 0.2
@@ -228,7 +228,7 @@ class NetworkGraph():
             if args.id_name and args.id_name in nodetype:
                 alpha=ip_alpha
                 nx.draw_networkx_nodes(self.G,pos=self.pos,nodelist=nodelist,ax=ax,\
-                            label=nodetype,alpha=alpha,node_size=node_size,node_shape="^",node_color=color)
+                            label=nodetype,alpha=alpha,node_size=self.node_size,node_shape="^",node_color=color)
             else:
                 if 'new' in nodetype:
                     alpha=0.4
@@ -246,10 +246,10 @@ class NetworkGraph():
                     handles.append(points.legend_elements("sizes", num=4))
                 else:
                     nx.draw_networkx_nodes(self.G,pos=self.pos,nodelist=nodelist,ax=ax,\
-                                label=nodetype,alpha=alpha,node_size=node_size,node_color=color)
+                                label=nodetype,alpha=alpha,node_size=self.node_size,node_color=color)
 
         nx.draw_networkx_edges(self.G,pos=self.pos,alpha=edge_alpha)
-        nx.draw_networkx_labels(self.G,pos=self.pos,labels=self.labels,font_size=font_size)
+        nx.draw_networkx_labels(self.G,pos=self.pos,labels=self.labels,font_size=self.font_size)
 
         legend = ax.legend(scatterpoints=1, markerscale=0.75)
         for leg in legend.legendHandles:
