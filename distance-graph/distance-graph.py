@@ -10,6 +10,8 @@ import networkx as nx
 import Levenshtein
 import itertools
 import re
+import pickle
+import numpy as np
 
 TOKENIZE_PATTERN = re.compile('[\s"=;|&><]')
 _NIX_COMMANDS = None
@@ -28,6 +30,9 @@ def parse_args():
     parser.add_argument("-3", "--input_file3", type=str, default=None, nargs=4,
                         help="Pass third [required] input filename, [required] node column name (e.g. command), label name of the data (e.g. data3), node's identifier column name (e.g. ip). Pass empty string '' if do not have label name or identifier column.")
 
+    parser.add_argument("-4", "--input_file4", type=str, default=None, nargs=4,
+                        help="Pass fourth [required] input filename, [required] node column name (e.g. command), label name of the data (e.g. data3), node's identifier column name (e.g. ip). Pass empty string '' if do not have label name or identifier column.")
+
     parser.add_argument("-on", "--output_names", type=str, nargs=3,
                         required=True, help="The names to use for output distance graph labels, edge list, and cluster list. Pass the [required] node name (e.g. command), column name for label (e.g. source), identifier name (e.g. ip). Pass empty string '' if input files do not have label name or identifier column.")
 
@@ -39,7 +44,10 @@ def parse_args():
 
     parser.add_argument("-stop", "--stopwords", default=None, type=str,
                         help="Path to text file that contains stopwords separated by a new line")
-    
+
+    parser.add_argument("--temporal", type=int, default=None, nargs='+',
+                        help="Pass the input file number(s) with 'new' data separated by a space to perform temporal analysis")
+
     parser.add_argument("-e", "--edge-weight", default=.95, type=float,
                         help="The edge weight threshold to use")
 
@@ -49,11 +57,29 @@ def parse_args():
     parser.add_argument("--top-k-edges", default=False, action="store_true",
                     help="Set this argument to graph top k edges for each node")
 
+    parser.add_argument("-p", "--position", default=None, type=str,
+                        help="Path to pickle file that contains NetworkX graph positional dictionary")
+
+    parser.add_argument("-l", "--labels", default=None, type=str,
+                        help="Path to pickle file that contains dictionary of node labels")
+
     parser.add_argument("-E", "--edge-list", default=None, type=str,
                         help="Output enumerated edge list to here")
 
     parser.add_argument("-c", "--cluster-list", default=None, type=str,
                         help="Output enumerated cluster list to here")
+
+    parser.add_argument("-t", "--template-list", default=None, type=str,
+                    help="Output list of templates to here")
+
+    parser.add_argument("-tc", "--templatecmd-list", default=None, type=str,
+                    help="Output list of templates and templatized commands to here")
+
+    parser.add_argument("-pf", "--position-file", default=None, type=str,
+                        help="Output pickle file that contains generated NetworkX graph positional dictionary to here")
+
+    parser.add_argument("-lf", "--labels-file", default=None, type=str,
+                        help="Output pickle file that contains dictionary of node labels to here")
 
     parser.add_argument("-w", "--width", default=12, type=float,
                         help="The width of the plot in inches")
@@ -116,16 +142,29 @@ def check_fileArgs(file_args, output_names):
             raise Exception("Identifier column name for input file {} is provided, but not provided in output names.".format(file_num))
 
 
-def get_cmd2template(file_args):
-    """ Given data file with commands, return dict with command templates
+def get_cmd2template(file_args,temporal):
+    """ Given data file with commands, return list of command templates dict. If performing temporal analysis, then get templates for period 1 and period 2
     Input:
-        input_file (list) - list of FSDB files that contain IP and command data
-        node_name (str) - column name of node
-        label_name (str) - column name of label
+        file_args (list) - list of input FSDB files
+        temporal (None/list) - list of file numbers (period 2) for temporal analysis
     Output:
-        cmd2template (dict) - maps templatizable commands to highest degree template
+        cmd2template (list) - list of two cmd2template dicts. cmd2template - maps templatizable commands to highest degree template
     """
-    cmds = get_commandCounts(file_args)
+    cmds,cmds2 = get_commandCounts(file_args,temporal)
+    # cmds,cmds2 = get_commandCounts2(file_args,temporal)
+    cmd2template = templatize_cmds(cmds)
+
+    if temporal:
+        print("Finding period 2 templates")
+        cmd2template2 = templatize_cmds(cmds2)
+    else:
+        cmd2template2 = {}
+
+    templates = [cmd2template,cmd2template2]
+
+    return templates
+
+def templatize_cmds(cmds):
     cmd_graph = CommandGraph()
     for cmd in tqdm.tqdm(cmds.keys()):
     #  print("==== CMD IS====\n%s" % cmd) 
@@ -138,7 +177,7 @@ def get_cmd2template(file_args):
     # print("Got templates. Done.")
     return cmd2template
 
-def get_commandCounts(file_args):
+def get_commandCounts(file_args, temporal):
     """ Counts number of commands run in the dataset and returns dict with command and respective counts
     Input:
         file_args (list) - list of file argument lists with format [filename, node name, label name, identifier name]
@@ -146,7 +185,9 @@ def get_commandCounts(file_args):
         cmdCount (dict) - maps command to number of times the cmd appears in the data
     """
     cmdCount = {}
+    cmdCount2 = {}
 
+    file_num = 1
     for input_file in file_args:
         filename = input_file[0]
         node_name = input_file[1]
@@ -159,15 +200,77 @@ def get_commandCounts(file_args):
             
             if node[0] != "[":
                 node = str([node])
-            
-            if node not in cmdCount:
-                cmdCount[node] = 1
+
+            if temporal:
+                if file_num in temporal: ## if file is in period 2, add nodes to cmdCount2
+                    if node not in cmdCount2:
+                        cmdCount2[node] = 1
+                    else:
+                        cmdCount2[node] += 1
+                else:
+                    if node not in cmdCount:
+                        cmdCount[node] = 1
+                    else:
+                        cmdCount[node] += 1
             else:
-                cmdCount[node] += 1
+                if node not in cmdCount:
+                    cmdCount[node] = 1
+                else:
+                    cmdCount[node] += 1
         
         db.close()
+        file_num += 1
 
-    return cmdCount
+    return cmdCount,cmdCount2
+
+def get_commandCounts2(file_args, temporal):
+    """ Counts number of commands run in the dataset and returns dict with command and respective counts
+        If looking at temporal periods, then return two dictionaries with period 1 commands and period 1 & 2 commands respectively
+    Input:
+        file_args (list) - list of file argument lists with format [filename, node name, label name, identifier name]
+    Output:
+        cmdCount (dict) - maps command to number of times the cmd appears in the data
+    """
+    cmdCount = {}
+    cmdCount2 = {}
+
+    file_num = 1
+    for input_file in file_args:
+        filename = input_file[0]
+        node_name = input_file[1]
+
+        db = pyfsdb.Fsdb(filename)
+        node_index = db.get_column_number(node_name)
+
+        for row in db:
+            node = row[node_index]
+            
+            if node[0] != "[":
+                node = str([node])
+
+            if temporal:
+                if file_num in temporal: ## if file is in period 2, add nodes to cmdCount2
+                    if cmdCount2 == {}:
+                        cmdCount2 = cmdCount.copy()
+                    if node not in cmdCount2:
+                        cmdCount2[node] = 1
+                    else:
+                        cmdCount2[node] += 1
+                else:
+                    if node not in cmdCount:
+                        cmdCount[node] = 1
+                    else:
+                        cmdCount[node] += 1
+            else:
+                if node not in cmdCount:
+                    cmdCount[node] = 1
+                else:
+                    cmdCount[node] += 1
+        
+        db.close()
+        file_num += 1
+
+    return cmdCount,cmdCount2
 
 def get_inputFile_args(inputfile_args):
     """ Parse each input file arg and return filename, node column name, label column name, and identifier column name
@@ -215,20 +318,27 @@ def map_output_names(file_args, output_names):
 
     return mapNameDic
 
-def get_info(file_args, output_names,cmd2template, template_nodes):
-    """ Return four dictionaries: (1) weights between commands, (2) IPs that ran commands, (3) sources for each command, and (4) command to array style string
+def get_info(file_args, output_names, cmd2template, args):
+    """ Cleans and transforms input data according to user arguments. Finds weights and labels of nodes.
+        Return four dictionaries: (1) weights between commands, (2) IPs that ran commands, (3) sources for each command,
+        and (4) command to array style string
     Input:
-        input_file (list) - list of FSDB files with IP and command data
-        node_name (str) - column name of node (eg. "command")
-        label_name (str) - column name of label (eg. "source")
-        id_name (str) - column name of identifier column (eg. "ip")
+        file_args (list) - list of file argument lists with format [filename, node name, label name, identifier name]
+        output_names (list) - list of output names to use for node, label, and identifier
         cmd2template (dict) - maps templatizable commands to highest degree template
+        args (class) - ArgumentParser class with input arguments
     Output:
         weightDic (dict) - key: pair of commands (tuple) / value: weight (float)
         cmdIPsDic (dict) - key: command (str) / value: dictionary with key: source (str) & value: IPs that ran command (list)
         sourceDic (dict) - key: command (str) / value: source label (str)
         cmdToArray (dict) - key: command (str) / value: array style command (str)
+        cmd2template (dict) - key: command (str) / value: template (tuple)
     """
+    template_nodes = args.template_nodes
+    temporal = args.temporal
+    templates = {}
+    cmd2templateCount = {}
+
     df = pd.DataFrame()
 
     node_name, label_name, id_name = get_outputNames(output_names)
@@ -259,34 +369,58 @@ def get_info(file_args, output_names,cmd2template, template_nodes):
 
         df2 = df.copy()[~df[id_name].isin(loggedInOnly)]
         df2 = df2[df2[node_name]!='[]']
-        cmds = list(df2[node_name].unique())
+        unique_cmds = list(df2[node_name].unique())
 
-        cmdIPsDic,sourceDic = get_cmdIPsDic(file_args,loggedInOnly,id_name,login_index)
+        cmdIPsDic,sourceDic = get_cmdIPsDic(file_args,loggedInOnly,id_name,login_index, temporal)
     else:
         df2 = df.copy()
         df2 = df2[df2[node_name]!='[]']
-        cmds = list(df2[node_name].unique())
-        labelDic = get_labelDic(file_args,login_index)
+        unique_cmds = list(df2[node_name].unique())
+        labelDic = get_labelDic(file_args,login_index,temporal)
         cmdIPsDic = None
+
+    got_unique_cmds = False
 
     if cmd2template:
         templates,cmd2template = get_templates(cmd2template)
-        unique_cmds,cmdIPsDic = get_uniqueCmds(cmds,cmdIPsDic,templates)
+        if cmdIPsDic:
+            unique_cmds,cmdIPsDic,templates,old_templates = get_uniqueCmds(unique_cmds,cmdIPsDic,{},templates,temporal)
+        else:
+            unique_cmds,labelDic,templates,old_templates = get_uniqueCmds(unique_cmds,cmdIPsDic,labelDic,templates,temporal)
 
         if template_nodes:
             unique_cmds2 = []
             for cmd in unique_cmds:
-                if cmd in [cmd for lst in templates.values() for cmd in lst]:
+                if (cmd in [cmd for lst in templates.values() for cmd in lst]):
+                # if (cmd in [cmd for lst in templates[0].values() for cmd in lst]) or (cmd in [cmd for lst in templates[1].values() for cmd in lst]):
                     unique_cmds2.append(cmd)
             
-            templateCounts = calc_templateCount(templates,df,node_name)
             unique_cmds = unique_cmds2
-    else:
-        unique_cmds = cmds
+            templateCounts = calc_templateCount(templates,df,node_name)
+            cmd2templateCount = map_cmd2templateCount(cmd2template,templateCounts,unique_cmds)
 
-    cmdToArray = {cmd[2:-2]:cmd for cmd in unique_cmds}
-    unique_cmds = [cmd[2:-2] for cmd in unique_cmds]
+            if args.labels:
+                labels = pickle.load(open(args.labels,"rb"))
+                unique_cmds,cmd_to_old_label = update_representativeCmd(unique_cmds,labels,cmd2template,templates)
+                cmdToArray = {cmd[2:-2]:cmd for cmd in unique_cmds}
+                unique_cmds = [cmd[2:-2] for cmd in unique_cmds]
 
+                if cmdIPsDic:
+                    cmdIPsDic = remap_dic(cmdIPsDic,cmd_to_old_label)
+                elif labelDic:
+                    labelDic = remap_dic(labelDic,cmd_to_old_label)
+
+                cmd2templateCount = remap_dic(cmd2templateCount,cmd_to_old_label,'cmd')
+                
+                got_unique_cmds = True
+    
+    if got_unique_cmds == False:
+        cmdToArray = {cmd[2:-2]:cmd for cmd in unique_cmds}
+        unique_cmds = [cmd[2:-2] for cmd in unique_cmds]
+
+    # cmdToArray = {cmd[2:-2]:cmd for cmd in unique_cmds}
+    # unique_cmds = [cmd[2:-2] for cmd in unique_cmds]
+    
     distDic = get_distances(unique_cmds)
     weightDic = get_weights(distDic)
 
@@ -295,14 +429,27 @@ def get_info(file_args, output_names,cmd2template, template_nodes):
     else:
         sourceDic = {cmd:"+".join(labelDic[cmdToArray[cmd]])+"_"+node_name for cmd in unique_cmds}
 
-    return weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2template
+    return weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2template,templates,cmd2templateCount,old_templates
+
+def remap_dic(dic, cmd_to_old_label, keys='array'):
+    if keys == 'array':
+        for cmd,old_label in cmd_to_old_label.items():
+            cmd = str([cmd])
+            old_label = str([old_label])
+            dic[old_label] = dic[cmd]
+            dic.pop(cmd)
+    else:
+        for cmd,old_label in cmd_to_old_label.items():
+            dic[old_label] = dic[cmd]
+            dic.pop(cmd)
+    return dic
 
 def get_loggedInOnly(df,node_name,label,id_name):
     """ Returns list of IP addresses that only logged in and did not run any commands 
     Input:
         df (Pandas DataFrame) - dataframe with info on IPs, commands
         node_name (str) - column name of node (eg. "command")
-        label_name (str) - column name of label (eg. "source")
+        label (str) - column name of label (eg. "source")
         id_name (str) - column name of identifier column (eg. "ip")
     Output:
         loggedInOnly (list) - IPs that only logged in
@@ -320,23 +467,27 @@ def get_loggedInOnly(df,node_name,label,id_name):
 
     return loggedInOnly
 
-def get_cmdIPsDic(file_args,loggedInOnly,id_name,login_index):
+def get_cmdIPsDic(file_args,loggedInOnly,id_name,login_index,temporal):
     """ Returns dict that contains IP addresses that ran the command and from what source
     Input:
-        input_file (str) - FSDB input file
+        file_args (list) - list of file argument lists with format [filename, node name, label name, identifier name]
         loggedInOnly (list) - list of IPs that only logged in
-        node_name (str) - column name of node (eg. "command")
-        label_name (str) - column name of label (eg. "source")
         id_name (str) - column name of identifier column (eg. "ip")
+        login_index (False/int) - index of login successful
+        temporal (None/list) - list of file numbers (period 2) for temporal analysis
     Output:
         cmdIPsDic (dict) - key: command (str) / value: dictionary with key: source (str) & value: IPs that ran command (list)
     """
     cmdIPsDic = {}
     labelIPDic = {}
 
+    seenNodes = []
+
+    file_num = 1
     for inputfile_args in file_args:
         filename, input_node_name, input_label_name, input_id_name = get_inputFile_args(inputfile_args)
         db = pyfsdb.Fsdb(filename)
+        seenNodes = list(set(seenNodes))
 
         id_index = db.get_column_number(input_id_name)
         node_index = db.get_column_number(input_node_name)
@@ -347,11 +498,21 @@ def get_cmdIPsDic(file_args,loggedInOnly,id_name,login_index):
             if ident in loggedInOnly: ## if IP only logged in, do not record
                 continue
 
+            ## check if login_index is provided. Skip over data where login_successful is false
             if (login_index != False) and (row[login_index] == 'False'):
                 continue
             
             node = row[node_index]
             label = input_label_name
+            ident_label = label
+
+            if temporal: ## if doing temporal analysis
+                if (file_num in temporal) and (node not in seenNodes): ## if looking at period 2 input file and node not seen
+                    label = "new_"+label
+                elif node in seenNodes: ## if node has been seen, continue
+                    continue
+                else:
+                    seenNodes.append(node)
             
             if node[0]!="[":
                 node = str([node])
@@ -365,39 +526,53 @@ def get_cmdIPsDic(file_args,loggedInOnly,id_name,login_index):
                     cmdIPsDic[node][label] = [ident]
 
             if ident not in labelIPDic:
-                labelIPDic[ident] = [label]
-            elif ident in labelIPDic and label not in labelIPDic[ident]:
-                labelIPDic[ident] = labelIPDic[ident] + [label]
+                labelIPDic[ident] = [ident_label]
+            elif ident in labelIPDic and ident_label not in labelIPDic[ident]:
+                labelIPDic[ident] = labelIPDic[ident] + [ident_label]
 
         db.close()
+        file_num += 1
 
     sourceDic = {ip:"+".join(labelIPDic[ip])+"_"+id_name for ip in labelIPDic.keys()}
 
     return cmdIPsDic,sourceDic
 
-def get_labelDic(file_args, login_index):
+def get_labelDic(file_args, login_index, temporal):
     """ Returns dict that maps node to list of labels node has
     Input:
         input_file (str) - FSDB input file
         node_name (str): column name of node (eg. "command")
         label_name (str): column name of label (eg. "source")
+        temporal (None/list) - list of file numbers (period 2) for temporal analysis
     Output:
         labelDic (dict) - key: node (str) / value: list of labels
     """
     labelDic = {}
 
+    seenNodes = []
+    file_num = 1
+
     for inputfile_args in file_args:
         filename, input_node_name, input_label_name, input_id_name = get_inputFile_args(inputfile_args)
         db = pyfsdb.Fsdb(filename)
+        seenNodes = list(set(seenNodes))
 
         node_index = db.get_column_number(input_node_name)
-        label = input_label_name
 
         for row in db:
             node = row[node_index]
+            label = input_label_name
 
             if (login_index != False) and (row[login_index] == 'False'):
                 continue
+
+            if temporal:
+                if (file_num in temporal) and (node not in seenNodes):
+                    label = "new_"+label
+                elif node in seenNodes:
+                    continue
+                else:
+                    seenNodes.append(node)
             
             if node[0]!="[":
                 node = str([node])
@@ -409,28 +584,35 @@ def get_labelDic(file_args, login_index):
                     labelDic[node].append(label)
         
         db.close()
+        file_num += 1
 
     return labelDic
 
-def get_templates(cmd2template):
+def get_templates(cmd2templates):
     """ Gets list of commands that belong to each template and returns a dictionary
     Input:
         cmd2template (dict) - key: command (str) / value: template (tuple)
     Output:
         template2cmd (dict) - key: template (tuple) / value: commands that belong to the template (list)
     """
-    template2cmd = {}
+    templates = []
     cmd2template2 = {}
 
-    for cmd,basename in cmd2template.items():
-        template = basename[2]
-        cmd2template2[cmd[2:-2]] = template
-        if template not in template2cmd:
-            template2cmd[template] = [cmd]
+    for cmd2template in cmd2templates:
+        template2cmd = {}
+        if cmd2template: ## cmd2template is not None
+            for cmd,basename in cmd2template.items():
+                template = basename[2]
+                cmd2template2[cmd[2:-2]] = template
+                if template not in template2cmd:
+                    template2cmd[template] = [cmd]
+                else:
+                    template2cmd[template] = template2cmd[template] + [cmd]
+            templates.append(template2cmd)
         else:
-            template2cmd[template] = template2cmd[template] + [cmd]
+            templates.append({})
 
-    return template2cmd, cmd2template2
+    return templates,cmd2template2
 
 def calc_templateCount(template2cmd,df,node_name):
     """ Counts how many of the templatized commands were run in the data and returns dict
@@ -448,20 +630,42 @@ def calc_templateCount(template2cmd,df,node_name):
 
     return templateCounts
 
-def get_uniqueCmds(cmds,cmdIPsDic,template2cmd):
+def map_cmd2templateCount(cmd2template,templateCounts,unique_cmds):
+    unique_cmds = [cmd[2:-2] for cmd in unique_cmds]
+    cmd2templateCount = {cmd:templateCounts[cmd2template[cmd]] for cmd in unique_cmds}
+    # cmd2templateCount = {cmd:int(math.sqrt(5*templateCounts[cmd2template[cmd]])) for cmd in unique_cmds}
+    return cmd2templateCount
+
+def get_uniqueCmds(cmds,cmdIPsDic,labelDic,templates,temporal):
     """ Returns list of unique commands, dict that maps command to a dict that has source and IPs that ran command
     Input:
         cmds (list) - list of commands,
         cmdIPsDic (dict) - dict that maps command to a dictionary that has source and IPs that ran the command
+        templates (list) - list of template2cmd dicts
         template2cmd (dict) - key: template (tuple) / value: commands that belong to the template (list)
+        temporal (None/list) - list of file numbers (period 2) for temporal analysis
     Output:
         unique_cmds (list) - list of unique commands
         cmdIPsDic (dict) - maps command to a dict that has source and IPs that ran the command
     """
     unique_cmds = cmds
     cmdTemplateDic = {}
+    first_cmds = []
+    templatized_cmds = []
 
+    if temporal:
+        new_templates = find_new_templates(templates)
+        old_templates = find_old_templates(templates)
+        to_remove = []
+        to_add = []
+    else:
+        new_templates = templates
+        old_templates = templates
+
+    template2cmd = combine_templates(templates)
+    # for template2cmd in templates:
     for template,cmds in template2cmd.items():
+        all_cmds = cmds
         first_cmd = cmds[0]
         cmds = cmds[1:]
         
@@ -474,23 +678,154 @@ def get_uniqueCmds(cmds,cmdIPsDic,template2cmd):
                         break
 
         cmdTemplateDic[first_cmd] = cmds
-        unique_cmds = [x for x in unique_cmds if x not in cmds]
 
-    for cmd_key in cmdTemplateDic:
-        if cmdIPsDic and cmd_key not in cmdIPsDic:
-            template_cmds = cmdTemplateDic[cmd_key]
-            first_cmd = template_cmds[0]
-            template_cmds = template_cmds[1:]
+        first_cmds = first_cmds + [first_cmd]
+        templatized_cmds = templatized_cmds + [cmds]
+
+        ## if doing temporal analysis and template is a new template
+        if temporal:
+            if cmdIPsDic:
+                labels2cmds = find_labelCmds(cmdIPsDic, all_cmds, 'ip')
+            else:
+                labels2cmds = find_labelCmds(labelDic, all_cmds, 'label')
+            for label,cmds in labels2cmds.items():
+                if 'new_' not in label and template in new_templates:
+                    new_label = 'new_'+label ## add new to label to indicate new template
+                    to_remove.append((cmds,label))
+                    if cmdIPsDic:
+                        ips = [ips for cmd in cmds for ips in cmdIPsDic[cmd][label]]
+                    else:
+                        ips = None
+                    to_add.append((cmds, new_label, ips))
+                elif 'new_' in label and template not in new_templates: ## if cmd new, but template is old >> remote 'new_' from label
+                    new_label = label.replace('new_','')
+                    to_remove.append((cmds,label))
+                    if cmdIPsDic:
+                        ips = [ips for cmd in cmds for ips in cmdIPsDic[cmd][label]]
+                    else:
+                        ips = None
+                    to_add.append((cmds, new_label, ips))
+
+    if temporal:
+        if cmdIPsDic:
+            for cmds,label in to_remove:
+                for cmd in cmds:
+                    cmdIPsDic[cmd].pop(label)
+            for cmds,label,value in to_add:
+                for cmd in cmds:
+                    cmdIPsDic[cmd][label] = value
         else:
-            for cmd in cmdTemplateDic[cmd_key]:
-                if cmdIPsDic and cmd not in cmdIPsDic:
-                    cmdTemplateDic[cmd_key].remove(cmd)
+            for cmds,label in to_remove:
+                for cmd in cmds:
+                    labelDic[cmd].remove(label)
+            for cmds,label,value in to_add:
+                for cmd in cmds:
+                    labelDic[cmd] = labelDic[cmd]+[label]
 
-    if cmdIPsDic:
+    # only keep 1st command of templatized commands as an example
+    templatized_cmds = [cmd for cmd in templatized_cmds if cmd not in first_cmds]
+    unique_cmds = [x for x in unique_cmds if x not in templatized_cmds]
+
+    for cmd_key,cmds in cmdTemplateDic.items():
+        for cmd in cmds:
+            if (cmdIPsDic and cmd not in cmdIPsDic) or (labelDic and cmd not in labelDic):
+                cmdTemplateDic[cmd_key].remove(cmd)
+
+    if cmdIPsDic:       
         cmdIPsDic = update_cmdIPsDic(cmdIPsDic,cmdTemplateDic)
         unique_cmds = list(cmdIPsDic.keys())
+        # print("Finished with cmdIPsDic")
+        return unique_cmds,cmdIPsDic,template2cmd,old_templates
+    else:
+        labelDic = update_labelDic(labelDic, cmdTemplateDic)
+        unique_cmds = list(labelDic.keys())
+        # print("Finished with labelDic")
+        return unique_cmds,labelDic,template2cmd,old_templates
+
+def find_new_templates(templates):
+    """ Compares templates from period 1 to period 2 and returns list of templates from period 2 not found in period 1
+    Input:
+        templates (list) - list containing two cmd2template dictionaries from period 1 and period 2
+    Output:
+        new_templates (list) - list of new templates
+    """
+    templates1 = templates[0].keys()
+    templates2 = templates[1].keys()
+    new_templates = [template for template in templates2 if template not in templates1]
+
+    return new_templates
+
+def find_old_templates(templates):
+    """ Compares templates from period 1 to period 2 and returns list of templates from period 2 not found in period 1
+    Input:
+        templates (list) - list containing two cmd2template dictionaries from period 1 and period 2
+    Output:
+        new_templates (list) - list of new templates
+    """
+    templates1 = templates[0].keys()
+    templates2 = templates[1].keys()
+    old_templates = [template for template in templates1 if template not in templates2]
+
+    return old_templates
+
+def combine_templates(templates):
+    """ Combines list of template2cmd dicts into one dictionary
+    Input:
+        templates (list) - list containing two cmd2template dictionaries from period 1 and period 2
+    Output:
+        templateDic (dict) - key: template (tuple) / value: commands that templatize to the template (list)
+    """
+    templateDic = {}
+    for template2cmd in templates:
+        for template,cmds in template2cmd.items():
+            if template not in templateDic:
+                templateDic[template] = cmds
+            else:
+                templateDic[template] = templateDic[template] + cmds
+
+    templateDic = {template:sorted(set(cmds)) for template,cmds in templateDic.items()}
     
-    return unique_cmds,cmdIPsDic
+    return templateDic
+
+def find_labelIPs(cmdIPsDic, cmds):
+    labels2ips = {}
+
+    for cmd in cmds:
+        ipsDic = cmdIPsDic[cmd]
+        labels = list(cmdIPsDic[cmd].keys())
+        for label in labels:
+            if label not in labels2ips:
+                labels2ips[label] = ipsDic[label]
+            else:
+                labels2ips[label] = labels2ips[label] + ipsDic[label]
+    
+    return labels2ips
+
+def find_labelCmds(cmdIPsDic, cmds, type):
+    labels2cmds = {}
+
+    for cmd in cmds:
+        if type == 'ip':
+            labels = list(cmdIPsDic[cmd].keys())
+        else:
+            labels = cmdIPsDic[cmd]
+        for label in labels:
+            if label not in labels2cmds:
+                labels2cmds[label] = [cmd]
+            else:
+                labels2cmds[label] = labels2cmds[label] + [cmd]
+    
+    return labels2cmds
+
+def get_allLabels(cmdIPsDic,cmds):
+    all_labels = []
+    for cmd in cmds:
+        labels = list(cmdIPsDic[cmd].keys())
+        all_labels = all_labels + labels
+
+    all_labels = set(all_labels)
+
+    return all_labels
 
 def update_cmdIPsDic(cmdIPsDic,cmdTemplateDic):
     """ Returns updated cmdIPsDic dict so templatized command IPs include all IPs that ran cmd with templatized cmd
@@ -522,6 +857,56 @@ def update_cmdIPsDic(cmdIPsDic,cmdTemplateDic):
     
     return cmdIPs
 
+def update_labelDic(labelDic, cmdTemplateDic):
+    updated_labelDic = labelDic.copy()
+    template_labelDic = {}
+
+    for cmd in cmdTemplateDic:
+        labels = [labelDic[cmd]] + [labelDic[cmds] for cmds in cmdTemplateDic[cmd]]
+        labels = [label for lst in labels for label in lst]
+        labels = list(set(labels))
+        template_labelDic[cmd] = labels
+
+    for cmd in template_labelDic:
+        updated_labelDic[cmd] = template_labelDic[cmd]
+        for cmds in cmdTemplateDic[cmd]:
+            if cmds in updated_labelDic:
+                del updated_labelDic[cmds]
+        #updated_labelDic[cmd] = template_labelDic[cmd]
+    
+    return updated_labelDic
+
+def update_representativeCmd(unique_cmds,labels,cmd2templates,templates):
+    labeled_cmds = labels.keys()
+    unique_cmds2 = [cmd[2:-2] for cmd in unique_cmds]
+    # templatized_cmds = [cmd[2:-2] for lst in templates.values() for cmd in lst]
+    change_cmds = {}
+
+    i = 0
+    for cmd in unique_cmds2:
+        template = cmd2templates[cmd]
+        temp_cmds = [temp_cmd[2:-2] for temp_cmd in templates[template]]
+
+        for labeled_cmd in labeled_cmds:
+            if labeled_cmd in temp_cmds and cmd != labeled_cmd:
+                change_cmds[cmd] = labeled_cmd
+                # unique_cmds.append(labeled_cmd)
+                # remove_cmds.append(cmd)
+                break
+        
+        i += 1
+        # for arrayCmd in temp_cmds:
+        #     temp_cmd = arrayCmd[2:-2]
+        #     if temp_cmd in labels:
+        #         print(temp_cmd)
+        #         unique_cmds.append(temp_cmd)
+        #         remove_cmds.append(cmd)
+        #         break
+
+    unique_cmds = [str([change_cmds[cmd[2:-2]]]) if cmd[2:-2] in change_cmds else cmd for cmd in unique_cmds]
+    # unique_cmds = [str([cmd]) for cmd in unique_cmds]
+    
+    return unique_cmds, change_cmds
 
 def get_distances(cmds):
     """ Returns dict that maps every pair of commands with their calculated distance
@@ -568,7 +953,7 @@ def get_weights(distDic):
 
     return weightDic
 
-def draw_networkx(args,output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray):
+def draw_networkx(args,output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2templates,cmd2templateCount,old_templates):
     """ Finds the weighted edges and plots the NetworkX graph. Obtains labels for nodes and cluster IDs for connected nodes
     Input:
         args (argument parser) - parser of command line arguments,
@@ -583,6 +968,7 @@ def draw_networkx(args,output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray):
         clusters (dict) - key: command node (str) / value: cluster ID (int)
     """
     threshold = args.edge_weight
+    pos = args.position
     output_file = args.output_file[0]
     figsize = tuple([args.width,args.height])
     node_name, label_name, id_name = get_outputNames(output_names)
@@ -597,16 +983,26 @@ def draw_networkx(args,output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray):
 
     G = nx.Graph()
     G.add_weighted_edges_from(weighted_edges)
-    labels = get_numberNodes(G)
+
+    if (args.labels):
+        labels = pickle.load(open(args.labels,"rb"))
+        labels = add_newLabels(G,labels,cmd2templates)
+    else:
+        labels = get_numberNodes(G)
+
     clusters = get_clusters(G)
 
     if cmdIPsDic:
         add_IPnodes(G,cmdToArray,cmdIPsDic)
-    
-    nodeTypeDic,colorslist = set_nodeColors(G,sourceDic,id_name)
-    plot_networkx(G,output_file,labels,colorslist,nodeTypeDic,id_name,figsize=figsize,font_size=args.font_size,node_size=args.node_size)
 
-    return G,weighted_edges,labels,clusters
+    nodeTypeDic,colorslist = set_nodeColors(G,sourceDic,id_name)
+
+    if (args.temporal):
+        pos = plot_temporal_networkx(G,pos,output_file,labels,colorslist,nodeTypeDic,id_name,cmd2templateCount,cmd2templates,old_templates,figsize=figsize,font_size=args.font_size,node_size=args.node_size)
+    else:
+        pos = plot_networkx(G,pos,output_file,labels,colorslist,nodeTypeDic,id_name,cmd2templateCount,figsize=figsize,font_size=args.font_size,node_size=args.node_size)
+
+    return G,weighted_edges,labels,clusters,pos
 
 def get_topK_edges(k,edgeweight,k_edges=False):
     """ Finds top k highest weight edges and returns list of top k edges
@@ -655,6 +1051,49 @@ def get_topK_edges(k,edgeweight,k_edges=False):
     
     return topK_edges
 
+def add_newLabels(G,labels,cmd2templates):
+    nodes = G.nodes()
+    num_labels = [labels[cmd]['label'] for cmd in labels]
+    template2label = {labels[cmd]['template']:labels[cmd]['label'] for cmd in labels}
+    # num_labels = list(labels.values())
+    new_labels = {}
+    
+    i=max(num_labels)+1
+    for node in nodes:
+        if node in labels:
+            new_labels[node] = labels[node]['label']
+        else:
+            if cmd2templates != {}:
+                template = cmd2templates[node]
+                if template in template2label:
+                    label = template2label[template]
+                    new_labels[node] = label
+                else:
+                    new_labels[node] = i
+                i+=1
+            else:
+                new_labels[node] = i
+                i+=1
+    
+    return new_labels
+
+def get_numberNodes(G):
+    """ Returns dict that has nodes mapped to a unique integer label
+    Input:
+        G (NetworkX graph) - graph with IP and command nodes
+        sourceDic (dict) - maps command nodes to source label
+    Output:
+        labels (dict) - maps node to labeled number
+    """
+    nodes = G.nodes()
+    labels = {}
+
+    i=0
+    for node in nodes:
+        labels[node] = i
+        i += 1
+    
+    return labels
 
 def add_IPnodes(G,cmdToArray,cmdIPsDic):
     """  Adds IP edges to command nodes
@@ -721,14 +1160,22 @@ def get_colors(types):
     """
     sourceToColor = {}
     colors_to_use = []
-    colorslist = ["b","c","r","y","g","tab:brown","tab:orange","tab:purple"]
+    colorslist = ["b","c","r","tab:orange","y","lime","tab:pink","g","tab:brown","tab:purple"]
 
     for type in types:
         source = type.split('_')[0]
 
         if source not in sourceToColor:
-            sourceToColor[source] = colorslist[0]
-            colorslist = colorslist[1:]
+            if 'new' in source: ## make new nodes red color
+                if "r" in colorslist:
+                    sourceToColor[source] = 'r'
+                    colorslist.pop(colorslist.index('r'))
+                else:
+                    sourceToColor[source] = 'lime'
+                    colorslist.pop(colorslist.index('lime'))
+            else:
+                sourceToColor[source] = colorslist[0]
+                colorslist = colorslist[1:]
         
         colors_to_use.append(sourceToColor[source])
     
@@ -752,25 +1199,7 @@ def get_nodeTypeDic(types,nodes,sourceDic,id_name):
             
     return nodeTypeDic
 
-def get_numberNodes(G):
-    """ Returns dict that has nodes mapped to a unique integer label
-    Input:
-        G (NetworkX graph) - graph with IP and command nodes
-        sourceDic (dict) - maps command nodes to source label
-    Output:
-        labels (dict) - maps node to labeled number
-    """
-    nodes = G.nodes()
-    labels = {}
-
-    i=0
-    for node in nodes:
-        labels[node] = i
-        i += 1
-    
-    return labels
-
-def plot_networkx(G,output_file,labels,colorslist,nodeTypeDic,id_name,figsize=(12,8),font_size=10,node_size=350,ip_alpha=0.2,cmd_alpha=0.2,edge_alpha=0.2):
+def plot_networkx(G,pos,output_file,labels,colorslist,nodeTypeDic,id_name,cmd2templateCount,figsize=(12,8),font_size=10,node_size=350,ip_alpha=0.2,cmd_alpha=0.2,edge_alpha=0.2):
     """ Plots NetworkX graph and saves image to output file
     Input:
         G (NetworkX graph) - graph with IP and command nodes to graph
@@ -782,8 +1211,15 @@ def plot_networkx(G,output_file,labels,colorslist,nodeTypeDic,id_name,figsize=(1
     """  
     fig,ax = plt.subplots(1,figsize=figsize)
 
-    pos=nx.spring_layout(G)
+    if not pos:
+        pos=nx.spring_layout(G)
+    else:
+        pos=pickle.load(open(pos,"rb"))
+        fixed_nodes = pos.keys()
+        pos=nx.spring_layout(G,pos=pos,fixed=fixed_nodes)
+        
     i=0
+    handles = []
     for nodetype in nodeTypeDic:
         nodelist = nodeTypeDic[nodetype]
         color = colorslist[i]
@@ -795,12 +1231,30 @@ def plot_networkx(G,output_file,labels,colorslist,nodeTypeDic,id_name,figsize=(1
                         label=nodetype,alpha=alpha,node_size=node_size,node_shape="^",node_color=color)
         else:
             alpha=cmd_alpha
-            nx.draw_networkx_nodes(G,pos=pos,nodelist=nodelist,ax=ax,\
-                        label=nodetype,alpha=alpha,node_size=node_size,node_color=color)
+            
+            if cmd2templateCount != {}:
+                node_sizes = [cmd2templateCount[node] for node in nodelist]
+                node_size_template = [int((5*node)**0.5) for node in node_sizes]
+                alpha = 0.25
+                # alpha = [alpha if cmd2template[node] not in old_templates else 0.085 for node in nodelist]
+                points = nx.draw_networkx_nodes(G,pos=pos,nodelist=nodelist,ax=ax,\
+                        label=nodetype,alpha=alpha,node_size=node_size_template,node_color=color)
+                handles.append(points.legend_elements("sizes", num=4))
+            else:
+                nx.draw_networkx_nodes(G,pos=pos,nodelist=nodelist,ax=ax,\
+                            label=nodetype,alpha=alpha,node_size=node_size,node_color=color)
 
     nx.draw_networkx_edges(G,pos=pos,alpha=edge_alpha)
     nx.draw_networkx_labels(G,pos=pos,labels=labels,font_size=font_size)
-    ax.legend(scatterpoints=1, markerscale=0.75)
+
+    legend = ax.legend(scatterpoints=1, markerscale=0.75)
+    for leg in legend.legendHandles:
+        leg._sizes = [250]
+    plt.gca().add_artist(legend)
+
+    if handles != []:
+        legend_handles, legend_labels = get_size_legend(handles)
+        ax.legend(handles=legend_handles,labels=legend_labels,bbox_to_anchor=(1,1.15), title='command count')
 
     ## remove black border
     ax.spines['top'].set_visible(False)
@@ -809,6 +1263,105 @@ def plot_networkx(G,output_file,labels,colorslist,nodeTypeDic,id_name,figsize=(1
     ax.spines['left'].set_visible(False)
     
     plt.savefig(output_file, dpi=300)
+
+    return pos
+
+def plot_temporal_networkx(G,pos,output_file,labels,colorslist,nodeTypeDic,id_name,cmd2templateCount,cmd2template,old_templates,figsize=(12,8),font_size=10,node_size=350,ip_alpha=0.1,cmd_alpha=0.25,edge_alpha=0.1):
+    """ Plots NetworkX graph and saves image to output file
+    Input:
+        G (NetworkX graph) - graph with IP and command nodes to graph
+        output_file (str) - filename for network graph image
+        labels (dict) - maps node to integer label
+        colorslist (list) - list of node colors
+        nodeTypeDic (dict) - maps node type to list of nodes
+        id_name (str) - column name of identifier column (eg. "ip")
+    """  
+    fig,ax = plt.subplots(1,figsize=figsize)
+
+    if not pos:
+        pos=nx.spring_layout(G)
+    else:
+        pos=pickle.load(open(pos,"rb"))
+        fixed_nodes = pos.keys()
+        pos=nx.spring_layout(G,pos=pos,fixed=fixed_nodes,k=0.3)
+    
+    handles = []
+    i = 0
+    for nodetype in nodeTypeDic:
+        nodelist = nodeTypeDic[nodetype]
+        color = colorslist[i]
+        i += 1
+
+        if id_name and id_name in nodetype:
+            alpha=ip_alpha
+            nx.draw_networkx_nodes(G,pos=pos,nodelist=nodelist,ax=ax,\
+                        label=nodetype,alpha=alpha,node_size=node_size,node_shape="^",node_color=color)
+        else:
+            if 'new' in nodetype:
+                alpha=0.4
+            else:
+                alpha=cmd_alpha
+                alpha = [alpha if cmd2template[node] not in old_templates else 0.085 for node in nodelist]
+            
+            if cmd2templateCount != {}:
+                node_sizes = [cmd2templateCount[node] for node in nodelist]
+                node_size_template = [int((5*node)**0.5) for node in node_sizes]
+                points = nx.draw_networkx_nodes(G,pos=pos,nodelist=nodelist,ax=ax,\
+                        label=nodetype,alpha=alpha,node_size=node_size_template,node_color=color)
+                handles.append(points.legend_elements("sizes", num=4))
+            else:
+                nx.draw_networkx_nodes(G,pos=pos,nodelist=nodelist,ax=ax,\
+                            label=nodetype,alpha=alpha,node_size=node_size,node_color=color)
+
+    nx.draw_networkx_edges(G,pos=pos,alpha=edge_alpha)
+    nx.draw_networkx_labels(G,pos=pos,labels=labels,font_size=font_size)
+
+    legend = ax.legend(scatterpoints=1, markerscale=0.75)
+    for leg in legend.legendHandles:
+        leg.set_alpha(0.5)
+        leg._sizes = [250]
+    plt.gca().add_artist(legend)
+
+    if handles != []:
+        legend_handles, legend_labels = get_size_legend(handles)
+        legend2 = ax.legend(handles=legend_handles,labels=legend_labels,bbox_to_anchor = (1,1.15), title='command count')
+        for leg in legend2.legendHandles:
+            leg.set_alpha(0.3)
+
+    ## remove black border
+    ax.spines['top'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    
+    plt.savefig(output_file, dpi=300)
+
+    return pos
+
+def get_size_legend(handles):
+    handle_points = []
+    handle_labels = []
+    regex = r'(\d+)'
+    
+    for handle in handles:
+        handle_points += handle[0]
+        handle_labels += handle[1]
+
+    handle_labels = [int(re.search(regex, handle).group(1)) for handle in handle_labels]
+    all_handles = sorted([(handle_points[i],handle_labels[i]) for i in range(len(handle_points))], key=lambda x: x[1])
+    to_keep = [min(handle_labels), max(handle_labels), all_handles[int(len(all_handles)/2)][1]]
+    all_handles = [handle for handle in all_handles if handle[1] in to_keep]
+
+    legend_handles = []
+    legend_labels = []
+    for handle in all_handles:
+        if handle[1] not in legend_labels:
+            legend_handles.append(handle[0])
+            legend_labels.append(handle[1])
+    
+    legend_labels = [int((label**2)/5) for label in legend_labels]
+    legend_labels = [f'{label:,}' for label in legend_labels]
+    return legend_handles, legend_labels
 
 def get_clusters(G):
     """ Finds clusters of commands in NetworkX graph. A cluster is considered to be nodes that are connected by an edge
@@ -970,12 +1523,13 @@ def main():
     args = parse_args()
 
     ## get list of file args and remove None input files args that were not specified
-    file_args = list(filter(None,[args.input_file1, args.input_file2, args.input_file3]))
+    file_args = list(filter(None,[args.input_file1, args.input_file2, args.input_file3, args.input_file4]))
     output_names = args.output_names
 
     check_fileArgs(file_args, output_names)
 
     if args.templatize:
+        temporal = args.temporal
         stopwords = args.stopwords
         if stopwords == None:
             raise Exception('Stopwords file is missing. The stopwords file is required for templatization.')
@@ -984,12 +1538,25 @@ def main():
         if _NIX_COMMANDS is None:
             _NIX_COMMANDS = set(open(stopwords).read().split('\n'))
 
-        cmd2template = get_cmd2template(file_args)
+        cmd2template = get_cmd2template(file_args,temporal)
     else:
         cmd2template = None
 
-    weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2template = get_info(file_args, output_names, cmd2template, args.template_nodes)
-    G,weighted_edges,labels,clusters = draw_networkx(args,output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray)
+    weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2template,templates,cmd2templateCount,old_templates = get_info(file_args, output_names, cmd2template, args)
+    G,weighted_edges,labels,clusters,pos = draw_networkx(args,output_names,weightDic,cmdIPsDic,sourceDic,cmdToArray,cmd2template,cmd2templateCount,old_templates)
+
+    ## save NetworkX graph position file to pickle file
+    if (args.position_file):
+        pickle.dump(pos, open(args.position_file, "wb" ))
+
+    ## save labels dict to pickle file
+    if (args.labels_file):
+        if (args.template_nodes):
+            output_labels = {cmd:{'label':label, 'template':cmd2template[cmd]} for cmd,label in labels.items()}
+            pickle.dump(output_labels, open(args.labels_file, "wb"))
+        else:
+            output_labels = {cmd:{'label':label, 'template':"N/A"} for cmd,label in labels.items()}
+            # pickle.dump(labels, open(args.labels_file, "wb" ))
 
     ## create edge list to FSDB file
     if (args.edge_list):
@@ -1001,8 +1568,8 @@ def main():
                 cluster_id = clusters[cmd1]
                 num1 = labels[cmd1]
                 num2 = labels[cmd2]
-                template1 = cmd2template[cmd1]
-                template2 = cmd2template[cmd2]
+                template1 = ' '.join(cmd2template[cmd1])
+                template2 = ' '.join(cmd2template[cmd2])
                 outh.append([cluster_id,round(weight,3),num1,num2,cmd1,cmd2,template1,template2])
             outh.close()
         else:
@@ -1021,7 +1588,7 @@ def main():
             outh = pyfsdb.Fsdb(out_file=args.cluster_list)
             outh.out_column_names=['cluster_id','command','template']
             for cmd,cluster_id in clusters.items():
-                template = cmd2template[cmd]
+                template = ' '.join(cmd2template[cmd])
                 outh.append([cluster_id,cmd,template])
             outh.close()
         else:
@@ -1030,6 +1597,46 @@ def main():
             for cmd,cluster_id in clusters.items():
                 outh.append([cluster_id,cmd])
             outh.close()
+
+    ## create template list to FSDB file
+    if (args.template_list):
+        if (args.template_nodes): ## if template nodes are being graphed, produce template list that contains template, example command, and label
+            outh = pyfsdb.Fsdb(out_file=args.template_list)
+            outh.out_column_names=['template','command','node','label']
+            template_list = []
+            for cmd in clusters.keys():
+                template = ' '.join(cmd2template[cmd])
+                node = labels[cmd]
+                if sourceDic != {}:
+                    label = sourceDic[cmd]
+                else:
+                    label = ''
+                template_list.append([template,cmd,node,label])
+
+            template_list = sorted(template_list)
+            for line in template_list:
+                outh.append(line)
+            outh.close()
+        else:
+            print("Template nodes were not graphed. No template list to output.")
+    
+    if (args.templatecmd_list):
+        if (args.template_nodes):
+            outh = pyfsdb.Fsdb(out_file=args.templatecmd_list)
+            outh.out_column_names=['template','command']
+            tc_list = []
+            for temp,cmds in templates.items():
+                template = ' '.join(temp)
+                cmds = sorted(set(cmds))
+                cmds = [cmd[2:-2] for cmd in cmds]
+                for cmd in cmds:
+                    tc_list.append([template,cmd])
+            tc_list = sorted(tc_list)
+            for line in tc_list:
+                outh.append(line)
+            outh.close()
+        else:
+            print("Template nodes were not graphed. No template command list to output.")
 
 if __name__ == "__main__":
     main()
