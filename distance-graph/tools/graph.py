@@ -17,8 +17,7 @@ class NetworkGraph():
         self.colorslist = []
 
         self.calculate_weighted_edges(args, data)
-        self.build_graph(args,data)
-        self.generate_labels(args,templates)
+        self.build_graph(args,data,templates)
 
     def calculate_weighted_edges(self, args, data):
         edgeweight = [tuple(list(k)+[v]) for k,v in data.weightDic.items()]
@@ -69,8 +68,9 @@ class NetworkGraph():
         
         return topK_edges
 
-    def build_graph(self, args, data):
+    def build_graph(self, args, data, templates):
         self.G.add_weighted_edges_from(sorted(self.weighted_edges))
+        self.generate_labels(args,templates)
         self.find_clusters()
 
         if args.id_name != '':
