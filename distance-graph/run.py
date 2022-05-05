@@ -31,7 +31,7 @@ def get_info(args, templates):
 
 def draw_networkx(args,data,templates):
     networkgraph = NetworkGraph(args,data,templates)
-    networkgraph.plot_networkx(args, templates)
+    networkgraph.plot_networkx(args,templates)
 
     return networkgraph
 
@@ -95,7 +95,7 @@ def main():
                 outh.append([cluster_id,cmd,template])
             outh.close()
         else:
-            outh = pyfsdb.Fsdb(out_file=args.cluster_list)
+            outh = pyfsdb.Fsdb(out_file=args.args.cluster_list)
             outh.out_column_names=['cluster_id','command']
             for cmd,cluster_id in networkgraph.clusters.items():
                 outh.append([cluster_id,cmd])
