@@ -49,12 +49,12 @@ class Data():
         if args.id_name != '':
             loggedIn = df[df[args.node_name]=='[]'][args.id_name].unique()
             loggedInOnly = []
-            labels = df[args.label].unique()
+            labels = df[args.label_name].unique()
 
             for ip in loggedIn:
                 cmdsRun = []
                 for label_name in labels:
-                    cmdsRun = cmdsRun + list(df[(df[args.id_name]==ip) & (df[args.label]==label_name)][args.node_name].unique())
+                    cmdsRun = cmdsRun + list(df[(df[args.id_name]==ip) & (df[args.label_name]==label_name)][args.node_name].unique())
                 if cmdsRun == ['[]']:
                     loggedInOnly.append(ip)
             
@@ -107,6 +107,9 @@ class Data():
             
             db.close()
             file_num += 1
+        
+        if args.id_name != '':
+            self.sourceDic = {ip:"+".join(self.sourceDic[ip])+"_"+args.id_name for ip in self.sourceDic.keys()}
 
     def update_labelDic_with_IPs(self, node, ident, label, ident_label):
         ## update labelDic
