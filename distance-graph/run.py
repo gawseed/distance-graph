@@ -8,6 +8,21 @@ import pickle
 
 
 def get_info(args, templates):
+    """
+    Extracts the data from the input files and gets necessary data for distance graph
+
+    Parameters ---
+    args : Arguments class
+        Class with user arguments
+    templates : Templates class
+        Class with template information
+
+    Returns ---
+    data : Data class
+        Class with data information
+    templates : Templates class
+        Class with updated template information
+    """
     data = Data(args)
 
     if templates:
@@ -30,6 +45,21 @@ def get_info(args, templates):
     return data,templates
 
 def draw_networkx(args,data,templates):
+    """
+    Creates the NetworkX distance graph
+
+    Parameters ---
+    args : Arguments class
+        Class with user arguments
+    data : Data class
+        Class with data information
+    templates : Templates class
+        Class with template information
+
+    Returns ---
+    networkgraph : NetworkGraph class
+        Class with distance graph information--labels, clusters, edgelist
+    """
     networkgraph = NetworkGraph(args,data,templates)
     networkgraph.plot_networkx(args,templates)
 
