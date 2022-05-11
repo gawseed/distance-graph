@@ -280,6 +280,7 @@ class Data():
     
     def update_representative_cmd(self, labels, templates):
         ## if label file given
+        self.cmdToArray = {cmd[2:-2]:cmd for cmd in self.unique_cmds}
         labeled_cmds = labels.keys()
         unique_cmds2 = [cmd[2:-2] for cmd in self.unique_cmds]
         change_cmds = {}
@@ -307,7 +308,8 @@ class Data():
     def remap_dic(self, dic, cmd_to_old_label, keys='array'):
         if keys == 'array':
             for cmd,old_label in cmd_to_old_label.items():
-                cmd = str([cmd])
+                cmd = self.cmdToArray[cmd]
+                # cmd = str([cmd])
                 old_label = str([old_label])
                 dic[old_label] = dic[cmd]
                 dic.pop(cmd)
