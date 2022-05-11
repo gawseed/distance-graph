@@ -207,7 +207,7 @@ class NetworkGraph():
     
     def plot_networkx(self,args,templates):
         ip_alpha = 0.2
-        cmd_alpha = 0.2
+        cmd_alpha = 0.3
         edge_alpha = 0.2
 
         fig,ax = plt.subplots(1,figsize=self.figsize)
@@ -235,7 +235,7 @@ class NetworkGraph():
                 else:
                     alpha = cmd_alpha
                     if args.args.temporal:
-                        alpha = [alpha if templates.cmd2template[node] not in templates.old_templates else 0.085 for node in nodelist]
+                        alpha = [alpha if templates.cmd2template[node] not in templates.old_templates else 0.05 for node in nodelist]
                 
                 if templates.cmd2template_count != {}:
                     node_sizes = [templates.cmd2template_count[node] for node in nodelist]
