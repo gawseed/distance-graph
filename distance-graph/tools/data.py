@@ -6,11 +6,48 @@ import pyfsdb
 from tools.arguments import FileArguments
 
 class Data():
+    """
+    A class containing important information from the input data that is necessary to generate the distance graph
+    """
     def __init__(self, args):
+        """
+        Initializes the attributes of the Data class
+
+        Input --
+        args : Arguments class
+        
+        Attributes ---
+        df : Pandas DataFrame
+            DataFrame containing data from input files
+        loggedInOnly : list
+            List of IPs that did not run any commands
+        unique_cmds : list
+            List of unique commands to graph
+        labelDic : dict
+            Dictionary containing labels (and IPs if given) for each command
+            If no IP column given: {'cmd1': [label1], 'cmd2': [label2], 'cmd3': [label1,label2], ...}
+            If IP column given: {'cmd1': {'label1': [IP1], 'label2': [IP2,IP3]}, 'cmd2': ...}
+        sourceDic : dict
+            Dictionary containing source labels for each command. Labels will be used for colors and legend in the distance graph
+            {'cmd1': 'label1+label2_command', 'cmd2': 'label2_command', ...}
+        distDic : dict
+            Dictionary containing calculated distance (Levenshtein distance/(length of cmd1 + length of cmd2)) for every pair of commands
+            {('cmd1','cmd2'): distance, ...}
+        weightDic : dict
+            Dictionary containing weights between every pair of commands
+            {('cmd1','cmd2'): distance, ...}
+        cmd_to_old_label : dict
+            Dictionary mapping command to previously seen command
+        got_unique_cmds : Boolean
+            True if unique commands have been finalized
+        cmdToArray : dict
+            Dictionary containing mapping for commands to array format of commands
+            {'cmd1': "['cmd1']", ...}
+        """
         self.df = pd.DataFrame()
         self.loggedInOnly = []
         self.unique_cmds = []
-        self.cmdIPsDic = {}
+        # self.cmdIPsDic = {}
         self.labelDic = {}
         self.sourceDic = {}
         self.distDic = {}
@@ -166,10 +203,6 @@ class Data():
             if temporal:
                 labels2cmds = self.find_labels2cmds(all_cmds, args)
                 
-                # if cmdIPsDic:
-                #     labels2cmds = find_labelCmds(cmdIPsDic, all_cmds, 'ip')
-                # else:
-                #     labels2cmds = find_labelCmds(labelDic, all_cmds, 'label')
                 for label,cmds in labels2cmds.items():
                     if 'new_' not in label and template in templates.new_templates:
                         new_label = 'new_'+label ## add new to label to indicate new template
@@ -270,13 +303,6 @@ class Data():
             if (cmd in [cmd for lst in templates.template2cmd.values() for cmd in lst]):
                 unique_cmds.append(cmd)
         self.unique_cmds = unique_cmds
-        ## if label file given
-        # if args.args.labels:
-        #     labels = pickle.load(open(args.args.labels,"rb"))
-        #     self.update_representative_cmd(labels, templates)
-        #     self.unique_cmds = [cmd[2:-2] for cmd in self.unique_cmds]
-        #     self.cmdToArray = {cmd[2:-2]:cmd for cmd in self.unique_cmds}
-        #     self.got_unique_cmds = True
     
     def update_representative_cmd(self, labels, templates):
         ## if label file given
