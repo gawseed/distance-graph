@@ -206,8 +206,8 @@ class NetworkGraph():
         self.clusters = cmdToCluster
     
     def plot_networkx(self,args,templates):
-        ip_alpha = 0.2
-        cmd_alpha = 0.3
+        ip_alpha = 0.125
+        cmd_alpha = 0.2
         edge_alpha = 0.15
 
         fig,ax = plt.subplots(1,figsize=self.figsize)
