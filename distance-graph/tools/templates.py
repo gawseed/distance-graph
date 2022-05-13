@@ -77,8 +77,8 @@ class Templates():
 
                 if temporal:
                     if file_num in temporal: ## if file is in period 2, add nodes to cmdCount2
-                        if cmdCount2 == {}: ## second period of commands contains period 1
-                            cmdCount2 = cmdCount.copy()
+                        # if cmdCount2 == {}: ## second period of commands contains period 1
+                        #     cmdCount2 = cmdCount.copy()
                         if node not in cmdCount2:
                             cmdCount2[node] = 1
                         else:
